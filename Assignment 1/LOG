@@ -1,0 +1,77 @@
+Net.C
+**********
+- Used the UNP book for help. Some of the missing code was found on Page 89.
+- The missing code had to do with assigning and updating nleft. 
+
+Client.c
+**********
+/*
+
+int getInput()
+{
+// STUDY THIS CODE AND EXPLAIN WHAT IT DOES AND WHY IN YOUR LOG FILE
+}
+** The function is getInput(). It zero's the data of the buffer, gets input from // the terminal, removes the newlines, and returns the size of the input buffer.
+
+
+int doConnect(void)
+{
+    // be sure you understand what the next two lines are doing
+    for (i=0; i<len; i++) if (globals.in.data[i]==':') globals.in.data[i]=' ';
+    sscanf(globals.in.data, "%*s %" XSTR(STRLEN) "s %d", globals.server,
+	   &globals.port);
+}
+** These two lines parses the input to determine whether the input was entered in the correct format.
+
+int sendStr(char *str, int fd)
+{
+  //STUDY THIS FUNCTION AND EXPAIN IN YOUR LOG FILE WHAT IT DOES AND HOW
+}
+** The function is sendStr(char *str, int fd). It takes in a string and checks for the buffer size of the string. Converts from network byte order to host byte order, and  
+** checks if it is able to write to the descriptor. It then allocates memory for the buffer and checks if it can read an exact number of bytes from the descriptor equal to 
+** the buffer size. It then writes from the buffer to standard output. 
+
+int main(int argc, char **argv)
+{
+    //What do you think the next line is for
+    if (rc==1) menu=1; else menu=0;
+}
+** It checks if it any of the commands were executed, if they were, then everything continues, if not, then a command was not executed.
+
+
+
+Server.c
+**********
+
+void str_echo(int sockfd)
+{
+    //MISSING AND IMPORTANT LINE HERE
+    // The missing line is to call the net_readn(FDType fd, void *vptr, size_t n) function which will read n bytes from a descriptor, this way all that is being read from the str echo function will be stored. The sockfd is used as the FDType to look for were it is and the len is used kind of like a buffer for cptr and n is the size of int for max length. 
+	n = net_readn(sockfd, &len, sizeof(int));
+    
+	// WHAT DOES THE NEXT LINE DO?
+	// The ntohl() function converts the unsigned integer netlong from network byte order to host byte order. This avoid any issue with little and big endianness of different computers that are connecting 
+    len = ntohl(len);
+}
+
+
+int main(int argc, char **argv)
+{
+
+// net_setup_listen_socket(FDType *fd, PortType *port)
+  //if (!HMMM WHAT SHOULD WE DO HERE)) {
+  // We have to setup a net_setup_listen_socket as the error message shows 
+  // The net_setup_listen_socket function takes in a fd and a port number
+  // So inorder to send in this we used the listenfd and the port number passed // in the main function that we declared, and because they are pointers we have // to pass in a referance  
+  if (!net_setup_listen_socket(&listenfd, &port)) {
+    fprintf(stderr, "net_setup_listen_socket FAILED!\n");
+    exit(-1);
+  }
+
+      //EXPLAIN WHAT IS HAPPENING HERE IN YOUR LOG
+      //int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
+      //                   void *(*start_routine) (void *), void *arg);
+      // The pthread_create() function starts a new thread in the calling process.// The new thread starts execution by invoking start_routine(); arg is    // passed as the sole argument of start_routine().
+// The tid is to setup a thread id for the new thread with no attr, the nex argument calls that doit function in our server.c file so that every thread gets that as it's running function and finally the connfd acts as a void call. 
+      pthread_create(&tid, NULL, &doit, (void *)connfd);
+}

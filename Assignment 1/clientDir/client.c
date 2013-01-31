@@ -112,7 +112,7 @@ doConnect(void)
   if (globals.connected==1) {
     //Add some code here ... probably a useful error message to stderr
     //  eg. fprintf(stderr, "some string ...", args);
-	fprintf(stderr, "globals.connected : %d", globals.connected);
+	fprintf(stderr, "Error could not connect, the value for globals.connected is: %d\n", globals.connected);
   } else {
     // be sure you understand what the next two lines are doing
     for (i=0; i<len; i++) if (globals.in.data[i]==':') globals.in.data[i]=' ';
@@ -122,7 +122,7 @@ doConnect(void)
     if (strlen(globals.server)==0 || globals.port==0) {
       //Add some code here ... probably a useful error message to stderr
       //eg. fprintf(stderr, "some string ...", args);
-	  	fprintf(stderr, "strlen(globals.server) : %z / globals.port : %z ", strlen(globals.server), globals.port);
+	  	fprintf(stderr, "Error the value for the server or port is incorrect, the values for strlen(globals.server) : %z / globals.port : %z ", strlen(globals.server), globals.port);
     } else {
       VPRINTF("connecting to: server=%s port=%d...", globals.server, globals.port);
 		  
