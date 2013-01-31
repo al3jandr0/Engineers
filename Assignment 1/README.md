@@ -12,12 +12,16 @@ Engineers
     <th>Name</th><th>Email</th>
   </tr>
   <tr>
-    <td>Gurwinder Singh</td><td>Awesome</td>
+    <td>Gurwinder Singh</td><td>[Email Gurwinder] [1]</td>
   </tr>
   <tr>
-    <td>Matthew Lee</td><td>Nearly as awesome</td>
+    <td>Matthew Lee</td><td>[Email Matthew] [2]</td>
   </tr>
   <tr>
-    <td>Alejandro Pelaez Lechuga</td><td>Awesome</td>
+    <td>Alejandro Pelaez Lechuga</td><td>[Email Alejandro] [3]</td>
   </tr>
 </table>
+
+  [1]: mailto:gsinghny@bu.edu      "Email Gurwinder"
+  [2]: mailto:matt2lee@bu.edu  "Email Matthew"
+  [3]: mailto:apelaez@bu.edu    "Email Alejandro"
