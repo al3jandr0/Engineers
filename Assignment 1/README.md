@@ -12,12 +12,12 @@ The
     <th>Name</th><th>Email</th>
   </tr>
   <tr>
-    <td>Gurwinder Singh</td><td>[Email Gurwinder](mailto:gsinghny@bu.edu)</td>
+    <td>Gurwinder Singh</td><td>gsinghny@bu.edu</td>
   </tr>
   <tr>
-    <td>Matthew Lee</td><td>[Email Matthew](mailto:matt2lee@bu.edu)</td>
+    <td>Matthew Lee</td><td>matt2lee@bu.edu</td>
   </tr>
   <tr>
-    <td>Alejandro Pelaez Lechuga</td><td>[Email Alejandro](mailto:apelaez@bu.edu)</td>
+    <td>Alejandro Pelaez Lechuga</td><td>apelaez@bu.edu</td>
   </tr>
 </table>
