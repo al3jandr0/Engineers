@@ -2,17 +2,26 @@ Saturday, February 9, 2013
 
 Attendees:
 Gurwinder Singh, gsinghny@bu.edu 
-Matthew Lee, matt2lee@bu.edu 
 Alejandro Pelaez Lechuga apelaez@bu.edu
 
 
 Questions:
+What parts do we need to fix? 
+Who will handle what parts? 
 
 
 Decisions:
+Read and understand the lib code. 
+Most of the lib files are broken, they need to be fixed (protocol_*.c). 
+Let's try to fix all the protocol_*.c today.  
 
 
 Todo:
+All - Finish reading and understanding the code in the lib.  
+Gurwinder - protocol_client.c
+Alegandro - protocol_server.c
+Gurwinder & Alegandro - protocol_session.c
 
 
 Comments/Notes:
+Matthew Lee could not make it because of snow storm. 
