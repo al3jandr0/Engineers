@@ -155,7 +155,7 @@ proto_server_post_event(void)
     Proto_Server.EventSession.fd = Proto_Server.EventSubscribers[i];
     if (Proto_Server.EventSession.fd != -1) {
       num--;
-      if (ADD CODE)<0) {
+      if (num < 0) {
 	// must have lost an event connection
 	close(Proto_Server.EventSession.fd);
 	Proto_Server.EventSubscribers[i]=-1;
@@ -166,7 +166,8 @@ proto_server_post_event(void)
       // correctly everywhere... at the risk of making server dependent
       // on client behaviour  (use time out to limit impact... drop
       // clients that misbehave but be carefull of introducing deadlocks
-    }
+        
+      }
     i++;
   }
   proto_session_reset_send(&Proto_Server.EventSession);
