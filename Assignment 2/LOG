@@ -2,17 +2,57 @@ Saturday, February 9, 2013
 
 Attendees:
 Gurwinder Singh, gsinghny@bu.edu 
-Matthew Lee, matt2lee@bu.edu 
 Alejandro Pelaez Lechuga apelaez@bu.edu
 
 
 Questions:
+What parts do we need to fix? 
+Who will handle what parts? 
 
 
 Decisions:
+Read and understand the lib code. 
+Most of the lib files are broken, they need to be fixed (protocol_*.c). 
+Let's try to fix all the protocol_*.c today.  
 
 
 Todo:
+All - Finish reading and understanding the code in the lib.  
+Gurwinder - protocol_client.c
+Alejandro - protocol_server.c
+Gurwinder & Alejandro - protocol_session.c
 
+
+Comments/Notes:
+Matthew Lee could not make it because of snow storm. 
+
+------------------------------------------------------------------------------------------------
+
+Saturday, February 16, 2013
+
+Attendees:
+Gurwinder Singh, gsinghny@bu.edu 
+Matthew Lee, matt2lee@bu.edu
+
+Questions:
+What parts are fixed?
+What issues did you have?
+Need to fix the following from protocol_server.c :
+      // FIXME: add ack message here to ensure that game is updated 
+      // correctly everywhere... at the risk of making server dependent
+      // on client behaviour  (use time out to limit impact... drop
+      // clients that misbehave but be carefull of introducing deadlocks
+How are we handling the game?
+
+Decisions:
+Fix protocol_server.c
+Fix protocol_session.c
+Understand the game logic and work on it. 
+Look up and understand on how to add in tic tac toe. 
+
+Todo:
+Alejandro - protocol_server.c
+Gurwinder - Add in basic tic tac toe game code
+Matthew - 
 
 Comments/Notes:
