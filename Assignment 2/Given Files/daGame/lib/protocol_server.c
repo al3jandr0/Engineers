@@ -155,7 +155,7 @@ proto_server_post_event(void)
     Proto_Server.EventSession.fd = Proto_Server.EventSubscribers[i];
     if (Proto_Server.EventSession.fd != -1) {
       num--;
-      if (num < 0) {
+      if (num < 0) {  // FIXED. (ADD CODE)
 	// must have lost an event connection
 	close(Proto_Server.EventSession.fd);
 	Proto_Server.EventSubscribers[i]=-1;
@@ -289,7 +289,10 @@ proto_server_init(void)
 				     proto_session_lost_default_handler);
   for (i=PROTO_MT_REQ_BASE_RESERVED_FIRST+1; 
        i<PROTO_MT_REQ_BASE_RESERVED_LAST; i++) {
-    ADD CODE
+    //ADD CODE
+    Proto_Server.base_req_handlers[i] = -1; // by analogy with the following for loop
+				            // Im not sure why only initialize [1] and [2]
+					    // First = 0, LAST = 3
   }
 
 
