@@ -37,7 +37,9 @@ doUpdateClients(void)
   s = proto_server_event_session();
   hdr.type = PROTO_MT_EVENT_BASE_UPDATE;
   proto_session_hdr_marshall(s, &hdr);
-  proto_server_post_event();  
+  proto_session_body_marshall_char(s,'B');
+  
+proto_server_post_event();  
   return 1;
 }
 
@@ -80,7 +82,7 @@ prompt(int menu)
 
   if (menu) printf("%s:", MenuString);
   fflush(stdout);
-  c=getchar();;
+  c=getchar();
   return c;
 }
 
@@ -104,6 +106,7 @@ shell(void *arg)
 int
 main(int argc, char **argv)
 { 
+  fprintf(stderr, "Testing stderr @server.c:main()\n");
   if (proto_server_init()<0) {
     fprintf(stderr, "ERROR: failed to initialize proto_server subsystem\n");
     exit(-1);

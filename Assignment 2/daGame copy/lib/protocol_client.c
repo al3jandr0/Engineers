@@ -207,20 +207,93 @@ do_generic_dummy_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
     
     return rc;
 }
+
+static int
+do_join_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
+{
+    int rc;
+    Proto_Session *s;
+    Proto_Client *c = ch;
+    
+    s = &(c->rpc_session);
+    // marshall
+    
+    marshall_mtonly(s, mt);
+    rc = proto_session_rpc(s);
+    
+    if (rc==1) {
+        proto_session_body_unmarshall_int(s, 0, &rc);
+    } else {
+        c->session_lost_handler(s);
+        close(s->fd);
+    }
+    
+    return rc;
+}
+
+static int
+do_leave_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
+{
+    int rc;
+    Proto_Session *s;
+    Proto_Client *c = ch;
+    
+    s = &(c->rpc_session);
+    // marshall
+    
+    marshall_mtonly(s, mt);
+    rc = proto_session_rpc(s);
+    
+    if (rc==1) {
+        proto_session_body_unmarshall_int(s, 0, &rc);
+    } else {
+        c->session_lost_handler(s);
+        close(s->fd);
+    }
+    
+    return rc;
+}
+
+static int
+do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
+{
+    int rc;
+    Proto_Session *s;
+    Proto_Client *c = ch;
+    
+    s = &(c->rpc_session);
+    // marshall
+    
+    marshall_mtonly(s, mt);
+    rc = proto_session_rpc(s);
+    
+    if (rc==1) {
+        proto_session_body_unmarshall_int(s, 0, &rc);
+    } else {
+        c->session_lost_handler(s);
+        close(s->fd);
+    }
+    
+    return rc;
+}
+
 extern int 
 proto_client_hello(Proto_Client_Handle ch)
 {
-    return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_HELLO);  
+    //return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_HELLO);  
+    return do_join_game_rpc(ch,PROTO_MT_REQ_BASE_HELLO);  
 }
 
 extern int 
 proto_client_move(Proto_Client_Handle ch, char data)
 {
-    return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_MOVE);  
+    //return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_MOVE);  
+    return do_move_rpc(ch,PROTO_MT_REQ_BASE_MOVE);  
 }
 
 extern int 
 proto_client_goodbye(Proto_Client_Handle ch)
 {
-    return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_GOODBYE);  
+    //return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_GOODBYE);  
+    return do_leave_game_rpc(ch,PROTO_MT_REQ_BASE_GOODBYE);  
 }
