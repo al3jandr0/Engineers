@@ -312,7 +312,8 @@ proto_server_mt_move_handler(Proto_Session *s)
 {
     int rc=1;
     Proto_Msg_Hdr h;
-    char position;    
+    char position;
+    char reply[100];    
 
     fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
     proto_session_dump(s);
@@ -323,12 +324,13 @@ proto_server_mt_move_handler(Proto_Session *s)
     // read msg here
     proto_session_body_unmarshall_char(s, 0, &position);
 
-    //figure out which Subscriber sent move msg
-   
+    // use fiedes to identify user. quick and dirty solution. Try sometjing else for next assigment
+ 
     // call TicTacToe function. This function should return the message to be
     // send to the player: “Not your turn yet!” or “Not a valid move!”
-    // char *func( player, position ); 
+    // char *func( int s->fd, char position ); 
     fprintf(stderr, "move: %c\n", position); // DEBUGING
+    fprintf(stderr, "fd: %i\n", s->fd); // DEBUGING
  
     // setup dummy reply header : set correct reply message type and
     // everything else empty
@@ -338,9 +340,12 @@ proto_server_mt_move_handler(Proto_Session *s)
     // TODO: add here game state version to h
     proto_session_hdr_marshall(s, &h);
     
-    // setup a dummy body that just has a return code
-    proto_session_body_marshall_int(s, 0x00000002);
-                                       
+    //proto_session_body_marshall_int(s, 0x00000002);
+    // reply with message from TicTacToe 
+    reply[0]='t'; reply[1]='e';reply[2]='s';reply[3]='t';reply[4]=0;
+    // size_t strnlen(const char *s, size_t maxlen);
+    proto_session_body_marshall_bytes(s, 100, reply);
+                                   
     rc=proto_session_send_msg(s,1);
     
     return rc;

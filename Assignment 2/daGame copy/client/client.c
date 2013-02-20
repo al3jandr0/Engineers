@@ -155,6 +155,8 @@ doRPC(Client *C)
 
   printf("doRPC: rc=0x%x\n", rc);
 
+  // add TicTacToe message printing here ?
+
   return rc;
 }
 

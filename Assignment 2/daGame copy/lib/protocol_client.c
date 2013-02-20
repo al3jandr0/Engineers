@@ -238,7 +238,8 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     Proto_Session *s;
     Proto_Client *c = ch;
     Proto_Msg_Hdr h;
-    
+    char message[100];    
+
     s = &(c->rpc_session);
     // marshall
    
@@ -264,7 +265,9 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     rc = proto_session_rpc(s);
     
     if (rc==1) {
-        proto_session_body_unmarshall_int(s, 0, &rc);
+        //proto_session_body_unmarshall_int(s, 0, &rc);
+         proto_session_body_unmarshall_bytes(s, 0, 100, message);
+         fprintf(stderr, "%s\n", message);
     } else {
         c->session_lost_handler(s);
         close(s->fd);
