@@ -232,16 +232,32 @@ do_join_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
 }
 
 static int
-do_leave_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
+do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
 {
     int rc;
     Proto_Session *s;
     Proto_Client *c = ch;
+    Proto_Msg_Hdr h;
     
     s = &(c->rpc_session);
     // marshall
-    
-    marshall_mtonly(s, mt);
+   
+    // This gets pass to proto_client_move, there is a char data. possible for the move dst, but what about X or Y ?
+    //     I must figure who sends me(server) rpc to determine if X or Y
+    //proto_client_move(Proto_Client_Handle ch, char data)
+
+    bzero(&h, sizeof(h));
+
+    // TODO: Fill the other h fields. In particulat h.sver
+    //       Save a client-local version of sver, pstate, and gstate 
+    h.type = mt;
+    proto_session_hdr_marshall(s, &h);
+
+    // add data to s->sbuf
+    // if more date needs to be send. use proto_session_body_marshall_bytes(...)
+    proto_session_body_marshall_char(s, data); 
+
+    //marshall_mtonly(s, mt);
     rc = proto_session_rpc(s);
     
     if (rc==1) {
@@ -255,7 +271,7 @@ do_leave_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
 }
 
 static int
-do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
+do_leave_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
 {
     int rc;
     Proto_Session *s;
@@ -288,7 +304,7 @@ extern int
 proto_client_move(Proto_Client_Handle ch, char data)
 {
     //return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_MOVE);  
-    return do_move_rpc(ch,PROTO_MT_REQ_BASE_MOVE);  
+    return do_move_rpc(ch,PROTO_MT_REQ_BASE_MOVE, data);  
 }
 
 extern int 
