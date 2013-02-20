@@ -308,6 +308,30 @@ proto_server_mt_join_game_handler(Proto_Session *s)
 }
 
 static int
+proto_server_mt_move_handler(Proto_Session *s)
+{
+    int rc=1;
+    Proto_Msg_Hdr h;
+    
+    fprintf(stderr, "proto_server_mt_null_handler: invoked for session:\n");
+    proto_session_dump(s);
+    
+    // setup dummy reply header : set correct reply message type and
+    // everything else empty
+    bzero(&h, sizeof(s));
+    h.type = proto_session_hdr_unmarshall_type(s);
+    h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
+    proto_session_hdr_marshall(s, &h);
+    
+    // setup a dummy body that just has a return code
+    proto_session_body_marshall_int(s, 0x00000002);
+                                       
+    rc=proto_session_send_msg(s,1);
+    
+    return rc;
+}
+
+static int
 proto_server_mt_leave_game_handler(Proto_Session *s)
 {
     int rc=1;
@@ -331,6 +355,8 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     return rc;
 }
 
+
+
 extern int
 proto_server_init(void)
 {
@@ -341,13 +367,14 @@ proto_server_init(void)
     
     proto_server_set_session_lost_handler(
                                           proto_session_lost_default_handler);
-    for (i=PROTO_MT_REQ_BASE_RESERVED_FIRST+1;
-         i<PROTO_MT_REQ_BASE_RESERVED_LAST; i++) {
+    //for (i=PROTO_MT_REQ_BASE_RESERVED_FIRST+1;
+    //     i<PROTO_MT_REQ_BASE_RESERVED_LAST; i++) {
         //proto_server_set_req_handler(i, proto_server_mt_null_handler);
         //proto_server_set_req_handler(i, proto_server_mt_join_game_handler);
-    }
+    //}
     // set_up_actual_game rpc handlers
     proto_server_set_req_handler( PROTO_MT_REQ_BASE_HELLO, proto_server_mt_join_game_handler);   
+    proto_server_set_req_handler( PROTO_MT_REQ_BASE_MOVE, proto_server_mt_move_handler);   
     proto_server_set_req_handler( PROTO_MT_REQ_BASE_GOODBYE, proto_server_mt_leave_game_handler);   
  
     
