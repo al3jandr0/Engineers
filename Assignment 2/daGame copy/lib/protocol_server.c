@@ -35,11 +35,12 @@
 #define PROTO_SERVER_MAX_EVENT_SUBSCRIBERS 1024
 
 static
-char *gameReplyMsg[] = { "Not your turn yet!", 
-                         "Not a valid move!", 
-                         "Game Over: You win",  
-                         "Game Over: You loose",  
-                         "Game Over: Draw" };
+char *gameReplyMsg[] = { "Not your turn yet!\n",    // 0
+                         "Not a valid move!\n",     // 1
+                         "Game Over: You win\n",    // 2
+                         "Game Over: You loose\n",  // 3
+                         "Game Over: Draw\n",       // 4
+                          NULL };                   // 5
 
 struct {
     FDType   RPCListenFD;
@@ -349,7 +350,7 @@ proto_server_mt_move_handler(Proto_Session *s)
     */
     // int func( int fd, char position ) 
     // TicTac = func( s->fd, position );
-       TicTac = 0;
+       TicTac = 5;
     fprintf(stderr, "move: %c\n", position); // DEBUGING
     fprintf(stderr, "fd: %i\n", s->fd); // DEBUGING
 
@@ -364,7 +365,8 @@ proto_server_mt_move_handler(Proto_Session *s)
     // proto_session_body_marshall_int(s, 0x00000002);
     // reply with message from TicTacToe
     bzero(reply, sizeof(reply));
-    strncpy(reply, gameReplyMsg[TicTac], sizeof(reply)-1 );   
+    if (TicTac < 5) 
+       strncpy(reply, gameReplyMsg[TicTac], sizeof(reply)-1 );   
     proto_session_body_marshall_bytes(s, sizeof(reply), reply);
     //proto_session_body_marshall_bytes(s, 50, gameReplyMsg[TicTac]);
                                    

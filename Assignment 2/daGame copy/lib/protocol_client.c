@@ -274,7 +274,7 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     if (rc==1) {
         //proto_session_body_unmarshall_int(s, 0, &rc);
         proto_session_body_unmarshall_bytes(s, 0, 50, message);
-        fprintf(stderr, "%s\n", message);
+        fprintf(stderr, "%s", message);
     } else {
         c->session_lost_handler(s);
         close(s->fd);
