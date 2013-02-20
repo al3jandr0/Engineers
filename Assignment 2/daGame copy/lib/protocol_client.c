@@ -98,6 +98,16 @@ proto_client_event_null_handler(Proto_Session *s)
     return 1;
 }
 
+static int
+proto_client_event_update_handler(Proto_Session *s)
+{
+    fprintf(stderr,
+            "proto_client_event_update_handler: invoked for session:\n");
+    proto_session_dump(s);
+    
+    return 1;
+}
+
 static void *
 proto_client_event_dispatcher(void * arg)
 {
@@ -147,7 +157,9 @@ proto_client_init(Proto_Client_Handle *ch)
     for (mt=PROTO_MT_EVENT_BASE_RESERVED_FIRST+1;
          mt<PROTO_MT_EVENT_BASE_RESERVED_LAST; mt++)
         proto_client_set_event_handler(c, mt, proto_client_event_null_handler);
-    
+  
+    proto_client_set_event_handler(c, PROTO_MT_EVENT_BASE_UPDATE, proto_client_event_update_handler);
+ 
     *ch = c;
     return 1;
 }
@@ -243,10 +255,6 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     s = &(c->rpc_session);
     // marshall
    
-    // This gets pass to proto_client_move, there is a char data. possible for the move dst, but what about X or Y ?
-    //     I must figure who sends me(server) rpc to determine if X or Y
-    //proto_client_move(Proto_Client_Handle ch, char data)
-
     bzero(&h, sizeof(h));
 
     // TODO: Fill the other h fields. In particulat h.sver
@@ -255,7 +263,6 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     proto_session_hdr_marshall(s, &h); 
 
     // add data to s->sbuf
-    // if more date needs to be send. use proto_session_body_marshall_bytes(...)
     if (proto_session_body_marshall_char(s, data) < 0)
 	fprintf(stderr,
                 "do_move_rpc: proto_session_body_marshall_char failed. "
@@ -266,8 +273,8 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     
     if (rc==1) {
         //proto_session_body_unmarshall_int(s, 0, &rc);
-         proto_session_body_unmarshall_bytes(s, 0, 100, message);
-         fprintf(stderr, "%s\n", message);
+        proto_session_body_unmarshall_bytes(s, 0, 50, message);
+        fprintf(stderr, "%s\n", message);
     } else {
         c->session_lost_handler(s);
         close(s->fd);
@@ -291,6 +298,7 @@ do_leave_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
     
     if (rc==1) {
         proto_session_body_unmarshall_int(s, 0, &rc);
+	if (rc == 1) fprintf(stderr, "Game Over: You Quit\n");
     } else {
         c->session_lost_handler(s);
         close(s->fd);

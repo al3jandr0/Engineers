@@ -34,6 +34,13 @@
 
 #define PROTO_SERVER_MAX_EVENT_SUBSCRIBERS 1024
 
+static
+char *gameReplyMsg[] = { "Not your turn yet!", 
+                         "Not a valid move!", 
+                         "Game Over: You win",  
+                         "Game Over: You loose",  
+                         "Game Over: Draw" };
+
 struct {
     FDType   RPCListenFD;
     PortType RPCPort;
@@ -288,20 +295,25 @@ proto_server_mt_join_game_handler(Proto_Session *s)
 {
     int rc=1;
     Proto_Msg_Hdr h;
+    int player;
     
-    fprintf(stderr, "proto_server_mt_null_handler: invoked for session:\n");
+    fprintf(stderr, "proto_server_mt_join_game_handler: invoked for session:\n");
     proto_session_dump(s);
-    
-    // setup dummy reply header : set correct reply message type and
-    // everything else empty
+   
+    // TicTacToe game add a player and return a either 1 or 2 or -1.
+    // If the playyer cant be added, return -1
+    // X = 1, Y = 2 
+    // int addPlayer(int fd);
+    // player = addPlayer(s->fd); 
+       player = 1;
+    // TODO: versioning. sver
+    // proto_session_hdr_marshall_sver(s, v);
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
     
-    // setup a dummy body that just has a return code
-    proto_session_body_marshall_int(s, 0x00000001);
-                                       
+    proto_session_body_marshall_int(s, player); 
     rc=proto_session_send_msg(s,1);
     
     return rc;
@@ -313,7 +325,8 @@ proto_server_mt_move_handler(Proto_Session *s)
     int rc=1;
     Proto_Msg_Hdr h;
     char position;
-    char reply[100];    
+    char reply[50];
+    int TicTac;
 
     fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
     proto_session_dump(s);
@@ -326,28 +339,47 @@ proto_server_mt_move_handler(Proto_Session *s)
 
     // use fiedes to identify user. quick and dirty solution. Try sometjing else for next assigment
  
-    // call TicTacToe function. This function should return the message to be
-    // send to the player: “Not your turn yet!” or “Not a valid move!”
-    // char *func( int s->fd, char position ); 
+    // call TicTacToe function. This function should return an int which represents the following 
+    /* 0  “Not your turn yet!”
+     * 1  “Not a valid move!”  
+     * 2  "Game Over: You win"
+     * 3  "Game Over: You loose"
+     * 4  "Game Over: Draw"
+     * 5   succesfull move. No one has won yet. update Subscribers
+    */
+    // int func( int fd, char position ) 
+    // TicTac = func( s->fd, position );
+       TicTac = 0;
     fprintf(stderr, "move: %c\n", position); // DEBUGING
     fprintf(stderr, "fd: %i\n", s->fd); // DEBUGING
- 
-    // setup dummy reply header : set correct reply message type and
-    // everything else empty
+
+    // TODO: versioning. sver
+    // proto_session_hdr_marshall_sver(s, v);
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     // TODO: add here game state version to h
     proto_session_hdr_marshall(s, &h);
     
-    //proto_session_body_marshall_int(s, 0x00000002);
-    // reply with message from TicTacToe 
-    reply[0]='t'; reply[1]='e';reply[2]='s';reply[3]='t';reply[4]=0;
-    // size_t strnlen(const char *s, size_t maxlen);
-    proto_session_body_marshall_bytes(s, 100, reply);
+    // proto_session_body_marshall_int(s, 0x00000002);
+    // reply with message from TicTacToe
+    bzero(reply, sizeof(reply));
+    strncpy(reply, gameReplyMsg[TicTac], sizeof(reply)-1 );   
+    proto_session_body_marshall_bytes(s, sizeof(reply), reply);
+    //proto_session_body_marshall_bytes(s, 50, gameReplyMsg[TicTac]);
                                    
     rc=proto_session_send_msg(s,1);
-    
+
+    // The update here is tricky.  Originally i wanted the messages 
+    // * 2  "Game Over: You win"
+    // * 3  "Game Over: You loose"
+    // * 4  "Game Over: Draw"
+    // to be sent through the event channel, but I dont know how would I distingush who wins and who looses.
+    // draw could be handled by the event channel without problems.
+    // win and loos are a litle more tricky
+    //if ( TicTac > 1 )
+    //	update; 
+
     return rc;
 }
 
@@ -359,7 +391,9 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     
     fprintf(stderr, "proto_server_mt_null_handler: invoked for session:\n");
     proto_session_dump(s);
-    
+   
+    // remove player from TicTacToe Game
+ 
     // setup dummy reply header : set correct reply message type and
     // everything else empty
     bzero(&h, sizeof(s));
@@ -368,10 +402,13 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     proto_session_hdr_marshall(s, &h);
     
     // setup a dummy body that just has a return code
-    proto_session_body_marshall_int(s, 0x00000003);
+    proto_session_body_marshall_int(s, 0x00000001);
                                        
     rc=proto_session_send_msg(s,1);
-    
+   
+    // UPDATE!
+    // so that the other side knows they won
+ 
     return rc;
 }
 

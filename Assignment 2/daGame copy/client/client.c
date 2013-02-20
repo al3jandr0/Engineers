@@ -124,6 +124,9 @@ doRPCCmd(Client *C, char c)
     {
       rc = proto_client_hello(C->ph);
       printf("hello: rc=%x\n", rc);
+      if ( rc == 1 )  printf("Connected to <ip:port>: You are X’s\n");// get port from globals
+      if ( rc == 2 )  printf("Connected to <ip:port>: You are Y’s\n");// get port from globals
+      if ( rc == -1 ) printf("Not able to connect to <ip:port>\n");// get port from globals
       if (rc > 0) game_process_reply(C);
     }
     break;
