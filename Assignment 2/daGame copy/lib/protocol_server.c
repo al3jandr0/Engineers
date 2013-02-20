@@ -312,15 +312,30 @@ proto_server_mt_move_handler(Proto_Session *s)
 {
     int rc=1;
     Proto_Msg_Hdr h;
-    
-    fprintf(stderr, "proto_server_mt_null_handler: invoked for session:\n");
+    char position;    
+
+    fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
     proto_session_dump(s);
-    
+ 
+    // check for msg version. if the message has an outdated state/version
+    //      TODO: handle versioning 
+
+    // read msg here
+    proto_session_body_unmarshall_char(s, 0, &position);
+
+    //figure out which Subscriber sent move msg
+   
+    // call TicTacToe function. This function should return the message to be
+    // send to the player: “Not your turn yet!” or “Not a valid move!”
+    // char *func( player, position ); 
+    fprintf(stderr, "move: %c\n", position); // DEBUGING
+ 
     // setup dummy reply header : set correct reply message type and
     // everything else empty
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
+    // TODO: add here game state version to h
     proto_session_hdr_marshall(s, &h);
     
     // setup a dummy body that just has a return code

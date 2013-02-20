@@ -251,11 +251,14 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     // TODO: Fill the other h fields. In particulat h.sver
     //       Save a client-local version of sver, pstate, and gstate 
     h.type = mt;
-    proto_session_hdr_marshall(s, &h);
+    proto_session_hdr_marshall(s, &h); 
 
     // add data to s->sbuf
     // if more date needs to be send. use proto_session_body_marshall_bytes(...)
-    proto_session_body_marshall_char(s, data); 
+    if (proto_session_body_marshall_char(s, data) < 0)
+	fprintf(stderr,
+                "do_move_rpc: proto_session_body_marshall_char failed. "
+                "Not enough available sbufer space\n");
 
     //marshall_mtonly(s, mt);
     rc = proto_session_rpc(s);
