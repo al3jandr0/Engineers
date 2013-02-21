@@ -29,6 +29,8 @@
 
 #define STRLEN 81
 
+char * clientMap;
+
 struct Globals {
   char host[STRLEN];
   PortType port;
@@ -96,6 +98,32 @@ prompt(int menu)
   fflush(stdout);
   c = getchar();
   return c;
+}
+
+void map(char* str)
+{
+	clientMap = str;
+
+	char winner = *str;
+
+		if (winner  == 'X')
+		{
+			printf("X is the winner.");
+		}
+		else if (winner == 'O')
+		{
+			printf("O is the winner");
+		}
+		else if (winner == 'D')
+		{
+			printf("It's a Draw.");
+		}
+		else
+		{
+		}
+
+		str++;
+        printf("%s\n", str);
 }
 
 
