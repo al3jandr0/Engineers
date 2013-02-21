@@ -86,3 +86,72 @@ Go to office hours tomorrow.
 
 
 Comments/Notes:
+
+------------------------------------------------------------------------------------------------
+
+*********************************************************************Tuesday, February 19, 2013
+
+Attendees:
+Gurwinder Singh, gsinghny@bu.edu 
+Alejandro Pelaez Lechuga apelaez@bu.edu
+
+
+Questions:
+How do we connect?
+Why are there 2 ports used? One for the RPC and one for the Event. 
+How and where should we include our game logic and code?
+
+
+Decisions:
+Go to office hours at 5 and ask the Professor on what to do.
+
+
+Todo:
+Go to office hours.
+Add in new RPC functions.
+
+
+Comments/Notes:
+
+------------------------------------------------------------------------------------------------
+
+*********************************************************************Wednesday, February 20, 2013
+
+Attendees:
+Gurwinder Singh, gsinghny@bu.edu 
+Alejandro Pelaez Lechuga apelaez@bu.edu
+
+
+Questions:
+What should the client handle in terms of the game logic?
+What should the server handle in terms of the game logic?
+What functions do we need?
+How are we broadcasting the winner and loser?
+How should we handle the case when a person drops the game?
+What happens if the server dies?
+
+Decisions:
+The client should handle the printing - including the winner and loser based on a string. 
+The server should handle all the game logic - winner and other non printing stuff. 
+The server will create the game map in a string and marshall that over. 
+To broadcast the winner and the loser we have a char that is sent to the client. 
+
+Todo:
+Add in the following into client.c:
+1. connect <ip:port> connect to a server. Once connected this command should do nothing. On failure
+it should display the appropriate message above.
+2. disconnect disconnect from the server. If not connected this command should do nothing. This
+command is actually a request to the server to quit and the actual connection should be terminated by
+the server after it sends a reply back to the clients.
+3. enter? if the user presses enter/return on its own then if client is connected the current version of the
+board should be displayed. This should do nothing if the client is not connected.
+4. [0-9] Mark the appropriate cell.
+5. where Display the <ip:port> of server that you are connected to. If no connect has been made then
+display “not connected”.
+6. quit quit client. If a game is in progress this command implies a disconnect first.
+
+Add in new RPC for update. 
+Add in the new tic tac toe game logic functions needed for the server. 
+
+
+Comments/Notes:
