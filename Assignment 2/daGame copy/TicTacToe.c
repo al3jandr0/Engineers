@@ -3,17 +3,14 @@
 
   int i = 0;                                   /* Loop counter                         */
   int r = 0;                                   /* Loop counter                         */
-  int col = 0;                                   /* Loop counter                         */
+  int col = 0;                                 /* Loop counter                         */
   char ch;									   /* Temp char							   */
   int temp;									   /* For the - loop					   */
   char str[256] = "";						   /* Str for single board 				   */
   int player = 0;                              /* Player number - 1 or 2               */
-  
-  
-  int playerX = 0;                             /* Select player X*/
-  int playerY = 0;                             /* Select player O*/
-  
-  
+  int turn = 0;								   /* Whose turn is it?					   */
+  int playerX = 0;                             /* Select player X                      */
+  int playerY = 0;                             /* Select player O                      */
   int go = 0;                                  /* Square selection number for turn     */
   int row = 0;                                 /* Row index for a square               */  
   int column = 0;                              /* Column index for a square            */
@@ -40,6 +37,7 @@ int addPlayer(int id)
 if (playerX == 0)
 {
       playerX = id;
+	  turn = playerX;
 	  return 1
 }
 else if (playerY == 0)
@@ -56,7 +54,7 @@ else
 }
 
 
-void game()
+char * game()
 {
 		if (winner  == 1)
 		{
@@ -133,17 +131,24 @@ void game()
 		return 1;									  //Not a valid move. 
 	  
 
-      board[row][column] = (player == 1) ? 'X' : 'O';        /* Insert player symbol   */
+	  if (playerX == id)
+	  {
+		board[row][column] = 'X';					/* Insert player symbol   */
+		turn = playerY;
+	  }
+	  
+	  if (playerY == id)
+	  {
+		board[row][column] = 'O';					/* Insert player symbol   */
+		turn = playerX;
+	  }
+	  
+      // board[row][column] = (player == 1) ? 'X' : 'O';        /* Insert player symbol   */
 
       /* Check for a winning line - diagonals first */     
       if((board[0][0] == board[1][1] && board[0][0] == board[2][2]) ||
          (board[0][2] == board[1][1] && board[0][2] == board[2][0])){
         winner = player;
-		game();
-		return 2;
-		}
-	  else if((board[0][0] > '9' && board[0][1] > '9' && board[0][2] > '9' && board[1][0] > '9' && board[1][1] > '9' && board[1][2] > '9' && board[2][0] > '9' && board[2][1] > '9' && board[2][2] > '9')){
-        winner = 3;
 		game();
 		return 2;
 		}
@@ -156,7 +161,11 @@ void game()
 			game();
 			return 2;
 			}
-      
-
+		}
+		
+	if((board[0][0] > '9' && board[0][1] > '9' && board[0][2] > '9' && board[1][0] > '9' && board[1][1] > '9' && board[1][2] > '9' && board[2][0] > '9' && board[2][1] > '9' && board[2][2] > '9')){
+        winner = 3;
+		game();
+		return 2;
 		}
 }
