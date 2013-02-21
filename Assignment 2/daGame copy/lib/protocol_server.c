@@ -35,9 +35,11 @@
 #define PROTO_SERVER_MAX_EVENT_SUBSCRIBERS 1024
 
 static
-char *gameReplyMsg[] = { "Not your turn yet!\n",    // 0
-                         "Not a valid move!\n",     // 1
-                          NULL };                   // 2 
+char *gameReplyMsg[] = { "Not your turn yet!\n",  // 0
+                         "Not a valid move!\n",   // 1
+                         NULL,                   // 2
+                         NULL };                 // 3
+
 
 struct {
     FDType   RPCListenFD;
@@ -179,6 +181,31 @@ proto_server_post_event(void)
     }
     proto_session_reset_send(&Proto_Server.EventSession);
     pthread_mutex_unlock(&Proto_Server.EventSubscribersLock);
+}
+
+int
+doUpdateClientsGame(void)
+{
+  Proto_Session *s;
+  Proto_Msg_Hdr hdr;
+  char map[PROTO_SESSION_BUF_SIZE-1];
+
+  bzero(&map, sizeof(map)); 
+  // DEBUG
+  map[0] = 'M'; map[1] = 'A';map[2] = 'P';//map[3] = 0; 
+  int ii;
+  //for ( ii =0; ii< sizeof(map); ii++ )
+  //	map[ii] = 'F';
+
+  s = proto_server_event_session();
+  // set sver if nescesary
+  hdr.type = PROTO_MT_EVENT_BASE_UPDATE;
+  proto_session_hdr_marshall(s, &hdr);
+  if (proto_session_body_marshall_bytes(s, sizeof(map), map) < 0)
+     fprintf(stderr, "doUpdateClientsGame: proto_session_body_marshall_bytes failed\n"); 
+  // marshall map. call game!
+  proto_server_post_event();
+  return 1;
 }
 
 
@@ -323,11 +350,11 @@ proto_server_mt_move_handler(Proto_Session *s)
     int rc=1;
     Proto_Msg_Hdr h;
     char position;
-    char reply[50];
+    char reply[PROTO_SESSION_BUF_SIZE-1];
     int TicTac;
 
     fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
-    proto_session_dump(s);
+    //proto_session_dump(s);
  
     // check for msg version. if the message has an outdated state/version
     //      TODO: handle versioning 
@@ -335,8 +362,6 @@ proto_server_mt_move_handler(Proto_Session *s)
     // read msg here
     proto_session_body_unmarshall_char(s, 0, &position);
 
-    // use fiedes to identify user. quick and dirty solution. Try sometjing else for next assigment
- 
     // call TicTacToe function. This function should return an int which represents the following 
     /* 0  “Not your turn yet!”
      * 1  “Not a valid move!”  
@@ -347,7 +372,7 @@ proto_server_mt_move_handler(Proto_Session *s)
     */
     // int func( int fd, char position ) 
     // TicTac = func( s->fd, position );
-       TicTac = 5;
+    TicTac = 0;
     fprintf(stderr, "move: %c\n", position); // DEBUGING
     fprintf(stderr, "fd: %i\n", s->fd); // DEBUGING
 
@@ -356,28 +381,22 @@ proto_server_mt_move_handler(Proto_Session *s)
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
-    // TODO: add here game state version to h
     proto_session_hdr_marshall(s, &h);
     
     // proto_session_body_marshall_int(s, 0x00000002);
     // reply with message from TicTacToe
     bzero(reply, sizeof(reply));
     if (TicTac < 2) 
-       strncpy(reply, gameReplyMsg[TicTac], sizeof(reply)-1 );   
-    proto_session_body_marshall_bytes(s, sizeof(reply), reply);
+       strncpy(reply, gameReplyMsg[TicTac], sizeof(reply) - 1 );
+    if (proto_session_body_marshall_bytes(s, sizeof(reply), reply) < 0 )
+       fprintf(stderr, "proto_server_mt_move_handler: "
+               "proto_session_body_marshall_bytes failed\n");
     //proto_session_body_marshall_bytes(s, 50, gameReplyMsg[TicTac]);
                                    
     rc=proto_session_send_msg(s,1);
 
-    // The update here is tricky.  Originally i wanted the messages 
-    // * 2  "Game Over: You win"
-    // * 3  "Game Over: You loose"
-    // * 4  "Game Over: Draw"
-    // to be sent through the event channel, but I dont know how would I distingush who wins and who looses.
-    // draw could be handled by the event channel without problems.
-    // win and loos are a litle more tricky
     //if ( TicTac > 1 )
-    //	update; 
+    doUpdateClientsGame();
 
     return rc;
 }

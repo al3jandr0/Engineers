@@ -101,9 +101,27 @@ proto_client_event_null_handler(Proto_Session *s)
 static int
 proto_client_event_update_handler(Proto_Session *s)
 {
+    char mapBuffer[PROTO_SESSION_BUF_SIZE-1];
+    char gameState;
+
     fprintf(stderr,
             "proto_client_event_update_handler: invoked for session:\n");
-    proto_session_dump(s);
+
+    if (proto_session_body_unmarshall_bytes(s, 0, sizeof(mapBuffer), mapBuffer) < 0)
+       fprintf(stderr,
+            "proto_client_event_update_handler: proto_session_body_unmarshall_bytes failed\n");
+
+    mapBuffer[sizeof(mapBuffer)-1] = 0;
+    gameState = mapBuffer[0];
+    int ii;
+    // TODO: Store local copy of map 
+    //for ( ii =0; ii< sizeof(mapBuffer); ii++ )
+    //   fprintf(stderr, "%c",mapBuffer[ii] );
+    fprintf(stderr, "%s\n", mapBuffer);
+    //fprintf(stderr, "%c\n", gameState);
+    
+
+    //proto_session_dump(s);
     
     return 1;
 }
@@ -250,7 +268,7 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     Proto_Session *s;
     Proto_Client *c = ch;
     Proto_Msg_Hdr h;
-    char message[100];    
+    char message[PROTO_SESSION_BUF_SIZE-1];    
 
     s = &(c->rpc_session);
     // marshall
@@ -273,7 +291,8 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     
     if (rc==1) {
         //proto_session_body_unmarshall_int(s, 0, &rc);
-        proto_session_body_unmarshall_bytes(s, 0, 50, message);
+        if (proto_session_body_unmarshall_bytes(s, 0, sizeof(message), message) < 0)
+           fprintf(stderr, "do_move_rpc: proto_session_body_unmarshall_bytes failed\n");
         fprintf(stderr, "%s", message);
     } else {
         c->session_lost_handler(s);

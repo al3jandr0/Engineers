@@ -37,9 +37,7 @@ doUpdateClients(void)
   s = proto_server_event_session();
   hdr.type = PROTO_MT_EVENT_BASE_UPDATE;
   proto_session_hdr_marshall(s, &hdr);
-  proto_session_body_marshall_char(s,'B');
-  
-proto_server_post_event();  
+  proto_server_post_event();  
   return 1;
 }
 
