@@ -37,10 +37,7 @@
 static
 char *gameReplyMsg[] = { "Not your turn yet!\n",    // 0
                          "Not a valid move!\n",     // 1
-                         "Game Over: You win\n",    // 2
-                         "Game Over: You loose\n",  // 3
-                         "Game Over: Draw\n",       // 4
-                          NULL };                   // 5
+                          NULL };                   // 2 
 
 struct {
     FDType   RPCListenFD;
@@ -365,7 +362,7 @@ proto_server_mt_move_handler(Proto_Session *s)
     // proto_session_body_marshall_int(s, 0x00000002);
     // reply with message from TicTacToe
     bzero(reply, sizeof(reply));
-    if (TicTac < 5) 
+    if (TicTac < 2) 
        strncpy(reply, gameReplyMsg[TicTac], sizeof(reply)-1 );   
     proto_session_body_marshall_bytes(s, sizeof(reply), reply);
     //proto_session_body_marshall_bytes(s, 50, gameReplyMsg[TicTac]);
