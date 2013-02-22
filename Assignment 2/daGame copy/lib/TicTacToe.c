@@ -33,20 +33,26 @@ int addPlayer(int id)
 {
 
 // LOCK
-
+printf("%d",turn);
 if (playerX == 0)
 {
       playerX = id;
 	  turn = playerX;
-	  return 1;
+	  
+printf("%d",turn);
+return 1;
 }
 else if (playerY == 0)
 {
 	  playerY = id;
-	  return 2;
+if (turn == 0)
+	turn = playerY;
+	  
+printf("%d",turn);
+return 2;
 }
 else 
-	  return -1;
+	  return 3;
 	  // NO more players 
 	  
 // UNLOCK
@@ -120,12 +126,12 @@ char * game(char * str)
 				}
 			}
 		}
-printf("WORKW\n");	
+winner = 0;
 		return str;
 }
 
 
-int quit(int id)
+int removePlayer(int id)
 {
 	  if (playerX == id)
 	  { 
@@ -135,6 +141,30 @@ int quit(int id)
 	  { 
 		winner = 5;
 	  }
+
+resetGame();
+
+return 1;
+}
+
+void resetGame()
+{
+playerX = 0;
+playerY = 0;
+
+board[0][0] = '1';
+board[0][1] = '2';
+board[0][2] = '3';
+
+board[1][0] = '4';
+board[1][1] = '5';
+board[1][2] = '6';
+
+board[2][0] = '7';
+board[2][1] = '8';
+board[2][2] = '9';
+
+turn = 0;
 }
 
 // Adding moves to the board - go is the number 1-9 for place on the board. 
@@ -143,41 +173,29 @@ int quit(int id)
 
  {
 
-	  
-
 	  // Check whose turn it is
 
 	  if (id != turn)
-
 		return 0;
-
-	  
-
-	  //printf("%d", go);
-
-	  
 
 	  // Check for valid move
 
-	  if(go>0 && go<10 )
-
+	  if(go>0 && go<=9)
 	  {
-
-	     row = --go/3;                                 //Get row index of square   
+	  row = --go/3;                                 //Get row index of square   
 
          column = go%3;                                //Get column index of square  
 
 	  }
 
 	  else 
-
+	  {
 		return 1;									  //Not a valid move. 
-
+	  }
+	
 	  if(board[row][column]>'9')
 
 	  {
-
-		//printf(%c, board[row][column]);
 
 		return 1; 
 
@@ -220,13 +238,15 @@ int quit(int id)
          (board[0][2] == board[1][1] && board[0][2] == board[2][0])){
 
         if (board[1][1] == 'X')
-
+{
 			winner = 1;
-
+resetGame();
+}
 		else 
-
+{
 			winner = 2;
-
+resetGame();
+}
 		return 2;
 
 		}
@@ -242,13 +262,15 @@ int quit(int id)
              (board[0][line] == board[1][line] && board[0][line] == board[2][line])){
 
                     if ((board[line][0] ==  'X' && board[line][1] == 'X' && board[line][2] == 'X') || (board[0][line] == 'X' && board[1][line] == 'X' && board[2][line] == 'X' ))
-
+{
 						winner = 1;
-
+resetGame();
+}
 					else 
-
+{
 						winner = 2;
-
+resetGame();
+}
 			return 2;
 
 			}
@@ -260,7 +282,7 @@ int quit(int id)
 	if((board[0][0] > '9' && board[0][1] > '9' && board[0][2] > '9' && board[1][0] > '9' && board[1][1] > '9' && board[1][2] > '9' && board[2][0] > '9' && board[2][1] > '9' && board[2][2] > '9')){
 
         winner = 3;
-
+resetGame();
 		return 2;
 
 		}

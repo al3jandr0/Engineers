@@ -10,7 +10,7 @@ int addPlayer(int id);
 
 char * game();
 
-int quit(int id);
+int removePlayer(int id);
  
 int logic(int id, int go);
 

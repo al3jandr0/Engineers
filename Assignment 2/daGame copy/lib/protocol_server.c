@@ -209,10 +209,7 @@ doUpdateClientsGame(void)
   // lock ?
   //strncpy(&mapBuffer[0], game(), sizeof(mapBuffer));
  
-  fprintf(stderr, "doUpdateClientsGame:One\n");  // DEBUG 
   game(&mapBuffer[0]);
-
-  fprintf(stderr, "doUpdateClientsGame:\n");  // DEBUG 
 
   if (proto_session_body_marshall_bytes(s, sizeof(mapBuffer), &mapBuffer[0]) < 0)
      fprintf(stderr, "doUpdateClientsGame: proto_session_body_marshall_bytes failed\n"); 
@@ -429,7 +426,7 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
    
     // remove player from TicTacToe Game
     // Lock ?
-    qq = quit(s->fd);
+    qq = removePlayer(s->fd);
 
     fprintf(stderr, "%d  quit() = %d\n", s->fd, qq); // DEBUGING
  
@@ -444,7 +441,7 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     rc=proto_session_send_msg(s,1);
    
     // UPDATE!
-    // so that the other side knows they won
+       doUpdateClientsGame();
  
     return rc;
 }
