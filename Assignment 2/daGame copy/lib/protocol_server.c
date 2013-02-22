@@ -190,8 +190,9 @@ proto_server_post_event(void)
     pthread_mutex_unlock(&Proto_Server.EventSubscribersLock);
 }
 
+// Broad casts the current map to Subscribers
 int
-doUpdateClientsGame(void)
+doUpdateClientsGame(int updateMapVersion)
 {
   Proto_Session *s;
   Proto_Msg_Hdr hdr;
@@ -204,7 +205,10 @@ doUpdateClientsGame(void)
   s = proto_server_event_session();
   // set sver if nescesary
   hdr.type = PROTO_MT_EVENT_BASE_UPDATE;
-  hdr.sver = gameMapVersion;
+  pthread_mutex_lock(&gameMapVersion_mutex);
+  if (updateMapVersion)
+     hdr.sver.raw = ++gameMapVersion.raw;
+  pthread_mutex_unlock(&gameMapVersion_mutex); 
   proto_session_hdr_marshall(s, &hdr);
 
   game(&mapBuffer[0]);
@@ -330,7 +334,7 @@ proto_server_mt_join_game_handler(Proto_Session *s)
     int player;
     
     fprintf(stderr, "proto_server_mt_join_game_handler: invoked for session:\n");
-    proto_session_dump(s);
+    //proto_session_dump(s);
    
     // TicTacToe game add a player and return a either 1 or 2 or -1.
     // If the playyer cant be added, return -1
@@ -350,7 +354,9 @@ proto_server_mt_join_game_handler(Proto_Session *s)
     
     proto_session_body_marshall_int(s, player); 
     rc=proto_session_send_msg(s,1);
-    
+   
+    doUpdateClientsGame(0);
+
     return rc;
 }
 
@@ -400,12 +406,7 @@ proto_server_mt_move_handler(Proto_Session *s)
     rc=proto_session_send_msg(s,1);
 
     if ( TicTac > 1 )
-    {
-       pthread_mutex_lock(&gameMapVersion_mutex);
-       gameMapVersion.raw++;
-       pthread_mutex_unlock(&gameMapVersion_mutex);
-       doUpdateClientsGame();
-    }
+       doUpdateClientsGame(1);
     return rc;
 }
 
@@ -424,20 +425,24 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     qq = removePlayer(s->fd);
 
     fprintf(stderr, "%d  quit() = %d\n", s->fd, qq); // DEBUGING
- 
+
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
+ 
+    /* quit return values
+     * 1 successfully removed player
+     * 2 unsuccsesfully removed player. Playes wasnt registerred in teh game
+     */
     
-    // setup a dummy body that just has a return code
     proto_session_body_marshall_int(s, qq);
-                                       
     rc=proto_session_send_msg(s,1);
    
-    // UPDATE!
-       doUpdateClientsGame();
- 
+    // if rmovePlayer == 1. call update
+    if ( qq == 1  )
+       doUpdateClientsGame(1);
+
     return rc;
 }
 
@@ -466,7 +471,7 @@ proto_server_init(void)
     pthread_mutex_lock(&gameMapVersion_mutex); 
     gameMapVersion.raw = 0;
     pthread_mutex_unlock(&gameMapVersion_mutex);   
- 
+
     for (i=0; i<PROTO_SERVER_MAX_EVENT_SUBSCRIBERS; i++) {
         Proto_Server.EventSubscribers[i]=-1;
     }

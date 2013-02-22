@@ -32,6 +32,7 @@
 #include "protocol_client.h"
 #include "./../lib/TicTacToe.h"
 
+
 typedef struct {
     Proto_Session rpc_session;
     Proto_Session event_session;
@@ -101,8 +102,6 @@ proto_client_event_null_handler(Proto_Session *s)
 static int
 proto_client_event_update_handler(Proto_Session *s)
 {
-    char mapBuffer[PROTO_SESSION_BUF_SIZE-1];
-    char gameState;
     Proto_Msg_Hdr h;
 
     fprintf(stderr,
@@ -112,16 +111,20 @@ proto_client_event_update_handler(Proto_Session *s)
     proto_session_hdr_unmarshall(s, &h);
 
     fprintf(stderr, "serverMapVersion = %llu\n", h.sver.raw);
-
-    if (proto_session_body_unmarshall_bytes(s, 0, sizeof(mapBuffer), &mapBuffer[0]) < 0)
-       fprintf(stderr,
+    pthread_mutex_lock(&gameMap_clientVersion_mutex);
+    if (h.sver.raw > gameMap_clientVersion.raw)
+    {
+       fprintf(stderr, " previous gameMap_clientVersion = %llu\n", gameMap_clientVersion.raw);
+       gameMap_clientVersion.raw++; // ++ or equals ?
+       if (proto_session_body_unmarshall_bytes(s, 0, sizeof(gameMap_clientCopy), &gameMap_clientCopy[0]) < 0)
+          fprintf(stderr,
             "proto_client_event_update_handler: proto_session_body_unmarshall_bytes failed\n");
 
-    mapBuffer[sizeof(mapBuffer)-1] = 0;
-    gameState = mapBuffer[0];
-    // TODO: Store local copy of map 
+       gameMap_clientCopy[sizeof(gameMap_clientCopy)-1] = 0;
 
-    map(&mapBuffer[0]);
+       map(&gameMap_clientCopy[0]);
+    }
+    pthread_mutex_unlock(&gameMap_clientVersion_mutex);
 
     //proto_session_dump(s);
     
@@ -173,7 +176,13 @@ proto_client_init(Proto_Client_Handle *ch)
     
     proto_client_set_session_lost_handler(c,
                                           proto_client_session_lost_default_hdlr);
-    
+
+    // initialize local game state
+    pthread_mutex_lock(&gameMap_clientVersion_mutex);
+    gameMap_clientVersion.raw = 0;
+    bzero(&gameMap_clientCopy[0], sizeof(gameMap_clientCopy));
+    pthread_mutex_unlock(&gameMap_clientVersion_mutex);
+ 
     for (mt=PROTO_MT_EVENT_BASE_RESERVED_FIRST+1;
          mt<PROTO_MT_EVENT_BASE_RESERVED_LAST; mt++)
         proto_client_set_event_handler(c, mt, proto_client_event_null_handler);

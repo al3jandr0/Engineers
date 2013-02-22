@@ -265,7 +265,7 @@ doRPC(Client *C)
   int rc;
   char c;
 
-  printf("enter (h|m<c>|g): ");
+  //printf("enter (h|m<c>|g): ");
   scanf("%c", &c);
   rc=doRPCCmd(C,c);
 
@@ -391,7 +391,7 @@ shell(void *arg)
   char * longcommand;
 
   while (1) {
-    if ((longcommand=prompt(menu))!=0) rc=doCMDS(C, longcommand);
+    //if ((longcommand=prompt(menu))!=0) rc=doCMDS(C, longcommand);
     if ((c=prompt(menu))!=0) rc=docmd(C, c);
     if (rc<0) break;
     if (rc==1) menu=1; else menu=0;
