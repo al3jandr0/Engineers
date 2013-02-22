@@ -93,11 +93,14 @@ int
 prompt(int menu) 
 {
   static char MenuString[] = "\n?> ";
-  if(whoami == 'X') 
-  	static char MenuString[] = "\nX> ";
   
-  if(whoami == 'Y') 
-  	static char MenuString[] = "\nY> ";
+  if(whoami == 'X') 
+        sprintf(MenuString, "\nX> " );
+  	//MenuString = "\nX> ";
+  
+  if(whoami == 'O') 
+        sprintf(MenuString, "\nO> " );
+  	//MenuString = "\nY> ";
   
   int ret;
   int c=0;
@@ -113,38 +116,37 @@ void map(char* str)
 {
 	clientMap = str;
 	
-
 	char winner = *str;
 
 		if (winner  == 'X')
 		{
-			printf("X is the winner.");
-			if (whoami == 'X') fprintf(stderr, "\n You win! \n");
-			if (whoami == 'Y') fprintf(stderr, "\n You lose! \n");
+			fprintf(stderr, "\nX is the winner.\n");
+			if (whoami == 'X') fprintf(stderr, "\nYou win! \n");
+			if (whoami == 'O') fprintf(stderr, "\nYou lose! \n");
 			playing = 2; // done playing
 		}
 		else if (winner == 'O')
 		{
-			printf("O is the winner");
-			if (whoami == 'X') fprintf(stderr, "\n You lose! \n");
-			if (whoami == 'O') fprintf(stderr, "\n You win! \n");
+			fprintf(stderr, "\nO is the winner.\n");
+			if (whoami == 'X') fprintf(stderr, "\nYou lose! \n");
+			if (whoami == 'O') fprintf(stderr, "\nYou win! \n");
 			playing = 2; // done playing
 		}
 		else if (winner == 'D')
 		{
-			printf("It's a Draw.");
+			fprintf(stderr,"\nIt's a Draw.\n");
 			playing = 2; // done playing
 		}
 		else if (winner == 'T')
 		{
-			printf("X Quits.");
+			fprintf(stderr,"\nX Quits.\n");
 			if (whoami == 'X') fprintf(stderr, "\n You quit - You lose! \n");
 			if (whoami == 'O') fprintf(stderr, "\n Other side quit - You win! \n");
 			playing = 2; // done playing
 		}
 		else if (winner == 'U')
 		{
-			printf("O Quits.");
+			fprintf(stderr, "\nO Quits.\n");
 			if (whoami == 'X') fprintf(stderr, "\n Other side quits - You win! \n");
 			if (whoami == 'O') fprintf(stderr, "\n You  quit - You lose! \n");
 			playing = 2; // done playing

@@ -195,10 +195,7 @@ doUpdateClientsGame(void)
 
   fprintf(stderr, "doUpdateClientsGame called\n");  // DEBUG 
 
-  //for (ii =0; ii < sizeof(mapBuffer); ii++)
-  //	mapBuffer[ii]=0;
-  // DEBUG
-  //map[0] = 'M'; map[1] = 'A';map[2] = 'P';//map[3] = 0; 
+  bzero(&mapBuffer[0], sizeof(mapBuffer));
 
   s = proto_server_event_session();
   // set sver if nescesary

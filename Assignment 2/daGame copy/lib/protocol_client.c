@@ -118,8 +118,8 @@ proto_client_event_update_handler(Proto_Session *s)
     // PRINT MAP
     // PRINT WIN LOOSE MSG
 
-    fprintf(stderr, "map buffer:\n%s\n", mapBuffer);  //DEBUG
-    fprintf(stderr, "game():\n");  //DEBUG
+    //fprintf(stderr, "map buffer:\n%s\n", mapBuffer);  //DEBUG
+    //fprintf(stderr, "game():\n");  //DEBUG
     map(&mapBuffer[0]);
 
     //proto_session_dump(s);
