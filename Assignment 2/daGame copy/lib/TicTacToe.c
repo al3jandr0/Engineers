@@ -130,25 +130,6 @@ winner = 0;
 		return str;
 }
 
-
-int removePlayer(int id)
-{
-	  if (playerX == id)
-	  { 
-		winner = 4;
-		resetGame();
-		return 1;
-	  }
-	  else if (playerY == id)
-	  { 
-		winner = 5;
-		resetGame();
-		return 1;
-	  }
-	  else 
-		return 2;
-}
-
 void resetGame()
 {
 playerX = 0;
@@ -169,6 +150,24 @@ board[2][2] = '9';
 winner = 0;
 
 turn = 0;
+}
+
+int removePlayer(int id)
+{
+	  if (playerX == id)
+	  { 
+		winner = 4;
+		resetGame();
+		return 1;
+	  }
+	  else if (playerY == id)
+	  { 
+		winner = 5;
+		resetGame();
+		return 1;
+	  }
+	  else 
+		return 2;
 }
 
 // Adding moves to the board - go is the number 1-9 for place on the board. 

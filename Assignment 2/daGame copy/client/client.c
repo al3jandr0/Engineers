@@ -200,6 +200,7 @@ void map(char* str)
 			fprintf(stderr, "\nX is the winner.\n");
 			if (whoami == 'X') fprintf(stderr, "\nYou win! \n");
 			if (whoami == 'O') fprintf(stderr, "\nYou lose! \n");
+str++;
         fprintf(stderr,"\n%s\n", str);
 			playing = 2; // done playing
 		}
@@ -208,6 +209,7 @@ void map(char* str)
 			fprintf(stderr, "\nO is the winner.\n");
 			if (whoami == 'X') fprintf(stderr, "\nYou lose! \n");
 			if (whoami == 'O') fprintf(stderr, "\nYou win! \n");
+str++;
         fprintf(stderr,"\n%s\n", str);
 			playing = 2; // done playing
 		}
@@ -215,6 +217,7 @@ void map(char* str)
 		{
 			fprintf(stderr,"\nIt's a Draw.\n");
         fprintf(stderr,"\n%s\n", str);
+str++;
 			playing = 2; // done playing
 		}
 		else if (winner == 'T')
@@ -222,6 +225,7 @@ void map(char* str)
 			fprintf(stderr,"\nX Quits.\n");
 			if (whoami == 'X') fprintf(stderr, "\n You quit - You lose! \n");
 			if (whoami == 'O') fprintf(stderr, "\n Other side quit - You win! \n");
+str++;
         fprintf(stderr,"\n%s\n", str);
 			playing = 2; // done playing
 		}
@@ -230,6 +234,7 @@ void map(char* str)
 			fprintf(stderr, "\nO Quits.\n");
 			if (whoami == 'X') fprintf(stderr, "\n Other side quits - You win! \n");
 			if (whoami == 'O') fprintf(stderr, "\n You  quit - You lose! \n");
+str++;
         fprintf(stderr,"\n%s\n", str);
 			playing = 2; // done playing
 		}
