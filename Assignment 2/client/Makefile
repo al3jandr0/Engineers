@@ -18,12 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-all:
-	make -C lib
-	make -C server
-	make -C client
+targets = client
 
-clean:
-	make -C lib clean
-	make -C server clean
-	make -C client clean
+include ../config.mk
+
+client_objs = $(objs)
+libs = $(DAGAMELIB) -lpthread
+
+client: $(client_objs) $(DAGAMELIBARCHIVE)
+	gcc $(CFLAGS) -o $@ $(client_objs) $(libs) 
+

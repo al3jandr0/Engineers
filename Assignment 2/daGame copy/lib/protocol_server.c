@@ -43,8 +43,7 @@ char *gameReplyMsg[] = { "Not your turn yet!\n",  // 0
                          NULL,                    // 4
                          NULL };                  // 5
 
-pthread_mutex_t addPlayer_mutex;
-pthread_mutex_t move_mutex;
+pthread_mutex_t game_mutex;
 pthread_mutex_t gameMapVersion_mutex;
 Proto_StateVersion gameMapVersion;
 
@@ -340,9 +339,9 @@ proto_server_mt_join_game_handler(Proto_Session *s)
     // If the playyer cant be added, return -1
     // X = 1, Y = 2 
     // int addPlayer(int fd);
-    pthread_mutex_lock(&addPlayer_mutex);
+    pthread_mutex_lock(&game_mutex);
     player = addPlayer(s->fd); 
-    pthread_mutex_unlock(&addPlayer_mutex);
+    pthread_mutex_unlock(&game_mutex);
     fprintf(stderr, "%d  addPlayer() = %d\n", s->fd, player); // DEBUGING
     
     // TODO: versioning. sver
@@ -381,9 +380,9 @@ proto_server_mt_move_handler(Proto_Session *s)
      */
     // int func( int fd, char position ) 
     intchar = position - '0';
-    pthread_mutex_lock(&move_mutex);
+    pthread_mutex_lock(&game_mutex);
     TicTac = logic( s->fd, intchar);
-    pthread_mutex_unlock(&move_mutex);
+    pthread_mutex_unlock(&game_mutex);
     // TODO: if debug func
     fprintf(stderr, "%d  intchar = %d\n", s->fd, intchar); // DEBUGING
     fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
@@ -407,6 +406,12 @@ proto_server_mt_move_handler(Proto_Session *s)
 
     if ( TicTac > 1 )
        doUpdateClientsGame(1);
+    if ( TicTac == 2  ) /* Game is over because of a successfull move*/
+    {
+        pthread_mutex_lock(&game_mutex);
+	resetGame();
+        pthread_mutex_unlock(&game_mutex);
+    }
     return rc;
 }
 
@@ -421,8 +426,9 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     proto_session_dump(s);
    
     // remove player from TicTacToe Game
-    // Lock ?
+    pthread_mutex_lock(&game_mutex);
     qq = removePlayer(s->fd);
+    pthread_mutex_lock(&game_mutex);
 
     fprintf(stderr, "%d  quit() = %d\n", s->fd, qq); // DEBUGING
 
@@ -433,7 +439,7 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
  
     /* quit return values
      * 1 successfully removed player
-     * 2 unsuccsesfully removed player. Playes wasnt registerred in teh game
+     * 2 unsuccsesfully removed player. Player wasnt registerred in the game
      */
     
     proto_session_body_marshall_int(s, qq);

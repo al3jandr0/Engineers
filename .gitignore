@@ -1,23 +1,25 @@
-<<<<<<< HEAD
-# Object files
+# Object files #
+################
 *.o
 
-# Libraries
+# Libraries #
+#############
 *.lib
 *.a
 
-# Shared objects (inc. Windows DLLs)
+# Shared objects (inc. Windows DLLs) #
+######################################
 *.dll
 *.so
 *.so.*
 *.dylib
 
-# Executables
+# Executables #
+###############
 *.exe
 *.out
 *.app
 
-=======
 # Compiled source #
 ###################
 *.com
@@ -31,6 +33,7 @@
 *.app
 
 # Libraries #
+#############
 *.lib
 *.a
 
@@ -62,4 +65,5 @@
 Icon?
 ehthumbs.db
 Thumbs.db
->>>>>>> fb387db88b587e38905e9cad19517a1c1629066a
+*.swp
+*.*~
