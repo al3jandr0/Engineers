@@ -229,7 +229,7 @@ doRPC(Client *C)
 
   return rc;
 }
-
+/*
 int doCMDS(Client *C, char * cmdInput)
 {
 
@@ -255,7 +255,7 @@ if ( strcmp(cmdInput, '\n') == 0 )
 //quit
 
 }
-
+*/
 int 
 docmd(Client *C, char cmd)
 {

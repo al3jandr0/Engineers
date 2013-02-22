@@ -103,9 +103,15 @@ proto_client_event_update_handler(Proto_Session *s)
 {
     char mapBuffer[PROTO_SESSION_BUF_SIZE-1];
     char gameState;
+    Proto_Msg_Hdr h;
 
     fprintf(stderr,
             "proto_client_event_update_handler: invoked for session:\n");
+
+    bzero(&h, sizeof(s));
+    proto_session_hdr_unmarshall(s, &h);
+
+    fprintf(stderr, "serverMapVersion = %llu\n", h.sver.raw);
 
     if (proto_session_body_unmarshall_bytes(s, 0, sizeof(mapBuffer), &mapBuffer[0]) < 0)
        fprintf(stderr,
@@ -115,11 +121,6 @@ proto_client_event_update_handler(Proto_Session *s)
     gameState = mapBuffer[0];
     // TODO: Store local copy of map 
 
-    // PRINT MAP
-    // PRINT WIN LOOSE MSG
-
-    //fprintf(stderr, "map buffer:\n%s\n", mapBuffer);  //DEBUG
-    //fprintf(stderr, "game():\n");  //DEBUG
     map(&mapBuffer[0]);
 
     //proto_session_dump(s);

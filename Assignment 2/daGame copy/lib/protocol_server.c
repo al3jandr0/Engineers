@@ -43,6 +43,11 @@ char *gameReplyMsg[] = { "Not your turn yet!\n",  // 0
                          NULL,                    // 4
                          NULL };                  // 5
 
+pthread_mutex_t addPlayer_mutex;
+pthread_mutex_t move_mutex;
+pthread_mutex_t gameMapVersion_mutex;
+Proto_StateVersion gameMapVersion;
+
 struct {
     FDType   RPCListenFD;
     PortType RPCPort;
@@ -191,7 +196,6 @@ doUpdateClientsGame(void)
   Proto_Session *s;
   Proto_Msg_Hdr hdr;
   char mapBuffer[PROTO_SESSION_BUF_SIZE-1];
-  //int ii;
 
   fprintf(stderr, "doUpdateClientsGame called\n");  // DEBUG 
 
@@ -200,12 +204,9 @@ doUpdateClientsGame(void)
   s = proto_server_event_session();
   // set sver if nescesary
   hdr.type = PROTO_MT_EVENT_BASE_UPDATE;
+  hdr.sver = gameMapVersion;
   proto_session_hdr_marshall(s, &hdr);
 
-  // TODO: change map + offset_1
-  // lock ?
-  //strncpy(&mapBuffer[0], game(), sizeof(mapBuffer));
- 
   game(&mapBuffer[0]);
 
   if (proto_session_body_marshall_bytes(s, sizeof(mapBuffer), &mapBuffer[0]) < 0)
@@ -335,9 +336,9 @@ proto_server_mt_join_game_handler(Proto_Session *s)
     // If the playyer cant be added, return -1
     // X = 1, Y = 2 
     // int addPlayer(int fd);
-    // Lock 
+    pthread_mutex_lock(&addPlayer_mutex);
     player = addPlayer(s->fd); 
-    // unLock
+    pthread_mutex_unlock(&addPlayer_mutex);
     fprintf(stderr, "%d  addPlayer() = %d\n", s->fd, player); // DEBUGING
     
     // TODO: versioning. sver
@@ -364,9 +365,6 @@ proto_server_mt_move_handler(Proto_Session *s)
 
     fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
     //proto_session_dump(s);
- 
-    // check for msg version. if the message has an outdated state/version
-    //      TODO: handle versioning 
 
     // read msg here
     proto_session_body_unmarshall_char(s, 0, &position);
@@ -374,21 +372,17 @@ proto_server_mt_move_handler(Proto_Session *s)
     // call TicTacToe function. This function should return an int which represents the following 
     /* 0  “Not your turn yet!”
      * 1  “Not a valid move!”  
-     * 2  Game over pass map
-     * 3  succesful move
-     * 4  Other player disconnect 
      */
     // int func( int fd, char position ) 
-    // TODO: Lock
     intchar = position - '0';
+    pthread_mutex_lock(&move_mutex);
     TicTac = logic( s->fd, intchar);
-    // TODO: unLock
+    pthread_mutex_unlock(&move_mutex);
+    // TODO: if debug func
     fprintf(stderr, "%d  intchar = %d\n", s->fd, intchar); // DEBUGING
     fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
     fprintf(stderr, "%d  move: %c\n", s->fd, position);   // DEBUGING
 
-    // TODO: versioning. sver
-    // proto_session_hdr_marshall_sver(s, v);
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
@@ -406,8 +400,12 @@ proto_server_mt_move_handler(Proto_Session *s)
     rc=proto_session_send_msg(s,1);
 
     if ( TicTac > 1 )
+    {
+       pthread_mutex_lock(&gameMapVersion_mutex);
+       gameMapVersion.raw++;
+       pthread_mutex_unlock(&gameMapVersion_mutex);
        doUpdateClientsGame();
-
+    }
     return rc;
 }
 
@@ -464,8 +462,11 @@ proto_server_init(void)
     proto_server_set_req_handler( PROTO_MT_REQ_BASE_HELLO, proto_server_mt_join_game_handler);   
     proto_server_set_req_handler( PROTO_MT_REQ_BASE_MOVE, proto_server_mt_move_handler);   
     proto_server_set_req_handler( PROTO_MT_REQ_BASE_GOODBYE, proto_server_mt_leave_game_handler);   
+
+    pthread_mutex_lock(&gameMapVersion_mutex); 
+    gameMapVersion.raw = 0;
+    pthread_mutex_unlock(&gameMapVersion_mutex);   
  
-    
     for (i=0; i<PROTO_SERVER_MAX_EVENT_SUBSCRIBERS; i++) {
         Proto_Server.EventSubscribers[i]=-1;
     }
