@@ -34,15 +34,6 @@
 
 #define PROTO_SERVER_MAX_EVENT_SUBSCRIBERS 1024
 
-static
-char *gameReplyMsg[] = { "Not your turn yet!\n",  // 0
-                         "Not a valid move!\n",   // 1
-                         NULL,                    // 2
-                         NULL,                    // 3
-                         NULL,                    // 4
-                         NULL };                  // 5
-      `
-
 struct {
     FDType   RPCListenFD;
     PortType RPCPort;
@@ -185,31 +176,6 @@ proto_server_post_event(void)
     pthread_mutex_unlock(&Proto_Server.EventSubscribersLock);
 }
 
-int
-doUpdateClientsGame(void)
-{
-  Proto_Session *s;
-  Proto_Msg_Hdr hdr;
-  char map[PROTO_SESSION_BUF_SIZE-1];
-
-  bzero(&map, sizeof(map)); 
-  // DEBUG
-  //map[0] = 'M'; map[1] = 'A';map[2] = 'P';//map[3] = 0; 
-
-  s = proto_server_event_session();
-  // set sver if nescesary
-  hdr.type = PROTO_MT_EVENT_BASE_UPDATE;
-  proto_session_hdr_marshall(s, &hdr);
-
-  // TODO: change map + offset_1
-  // lock ?
-  strncpy(map, game(), sizeof(map));
-  if (proto_session_body_marshall_bytes(s, sizeof(map), map) < 0)
-     fprintf(stderr, "doUpdateClientsGame: proto_session_body_marshall_bytes failed\n"); 
-  proto_server_post_event();
-  return 1;
-}
-
 
 static void *
 proto_server_req_dispatcher(void * arg)
@@ -322,86 +288,22 @@ proto_server_mt_join_game_handler(Proto_Session *s)
 {
     int rc=1;
     Proto_Msg_Hdr h;
-    int player;
     
-    fprintf(stderr, "proto_server_mt_join_game_handler: invoked for session:\n");
+    fprintf(stderr, "proto_server_mt_null_handler: invoked for session:\n");
     proto_session_dump(s);
-   
-    // TicTacToe game add a player and return a either 1 or 2 or -1.
-    // If the playyer cant be added, return -1
-    // X = 1, Y = 2 
-    // int addPlayer(int fd);
-    // Lock 
-    player = addPlayer(s->fd); 
-    // unLock
-    fprintf(stderr, "%d  addPlayer() = %d\n", s->fd, player); // DEBUGING
     
-    // TODO: versioning. sver
-    // proto_session_hdr_marshall_sver(s, v);
+    // setup dummy reply header : set correct reply message type and
+    // everything else empty
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
     
-    proto_session_body_marshall_int(s, player); 
+    // setup a dummy body that just has a return code
+    proto_session_body_marshall_int(s, 0x00000001);
+                                       
     rc=proto_session_send_msg(s,1);
     
-    return rc;
-}
-
-static int
-proto_server_mt_move_handler(Proto_Session *s)
-{
-    int rc=1;
-    Proto_Msg_Hdr h;
-    char position;
-    char reply[PROTO_SESSION_BUF_SIZE-1];
-    int TicTac;
-
-    fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
-    //proto_session_dump(s);
- 
-    // check for msg version. if the message has an outdated state/version
-    //      TODO: handle versioning 
-
-    // read msg here
-    proto_session_body_unmarshall_char(s, 0, &position);
-
-    // call TicTacToe function. This function should return an int which represents the following 
-    /* 0  “Not your turn yet!”
-     * 1  “Not a valid move!”  
-     * 2  Game over pass map
-     * 3  succesful move
-     * 4  Other player disconnect 
-     */
-    // int func( int fd, char position ) 
-    // TODO: Lock
-    TicTac = logic( s->fd, position - '0');
-    // TODO: unLock
-    fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
-    fprintf(stderr, "%d  move: %c\n", s->fd, position);   // DEBUGING
-
-    // TODO: versioning. sver
-    // proto_session_hdr_marshall_sver(s, v);
-    bzero(&h, sizeof(s));
-    h.type = proto_session_hdr_unmarshall_type(s);
-    h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
-    proto_session_hdr_marshall(s, &h);
-    
-    // proto_session_body_marshall_int(s, 0x00000002);
-    // reply with message from TicTacToe
-    bzero(reply, sizeof(reply));
-    if (TicTac < 2) 
-       strncpy(reply, gameReplyMsg[TicTac], sizeof(reply) - 1 );
-    if (proto_session_body_marshall_bytes(s, sizeof(reply), reply) < 0 )
-       fprintf(stderr, "proto_server_mt_move_handler: "
-               "proto_session_body_marshall_bytes failed\n");
-                                   
-    rc=proto_session_send_msg(s,1);
-
-    if ( TicTac > 1 )
-       doUpdateClientsGame();
-
     return rc;
 }
 
@@ -410,34 +312,24 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
 {
     int rc=1;
     Proto_Msg_Hdr h;
-    int qq;    
-
+    
     fprintf(stderr, "proto_server_mt_null_handler: invoked for session:\n");
     proto_session_dump(s);
-   
-    // remove player from TicTacToe Game
-    // Lock ?
-    qq = quit(s->fd);
-
-    fprintf(stderr, "%d  quit() = %d\n", s->fd, qq); // DEBUGING
- 
+    
+    // setup dummy reply header : set correct reply message type and
+    // everything else empty
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
     
     // setup a dummy body that just has a return code
-    proto_session_body_marshall_int(s, qq);
+    proto_session_body_marshall_int(s, 0x00000003);
                                        
     rc=proto_session_send_msg(s,1);
-   
-    // UPDATE!
-    // so that the other side knows they won
- 
+    
     return rc;
 }
-
-
 
 extern int
 proto_server_init(void)
@@ -449,14 +341,13 @@ proto_server_init(void)
     
     proto_server_set_session_lost_handler(
                                           proto_session_lost_default_handler);
-    //for (i=PROTO_MT_REQ_BASE_RESERVED_FIRST+1;
-    //     i<PROTO_MT_REQ_BASE_RESERVED_LAST; i++) {
+    for (i=PROTO_MT_REQ_BASE_RESERVED_FIRST+1;
+         i<PROTO_MT_REQ_BASE_RESERVED_LAST; i++) {
         //proto_server_set_req_handler(i, proto_server_mt_null_handler);
         //proto_server_set_req_handler(i, proto_server_mt_join_game_handler);
-    //}
+    }
     // set_up_actual_game rpc handlers
     proto_server_set_req_handler( PROTO_MT_REQ_BASE_HELLO, proto_server_mt_join_game_handler);   
-    proto_server_set_req_handler( PROTO_MT_REQ_BASE_MOVE, proto_server_mt_move_handler);   
     proto_server_set_req_handler( PROTO_MT_REQ_BASE_GOODBYE, proto_server_mt_leave_game_handler);   
  
     

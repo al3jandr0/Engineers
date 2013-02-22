@@ -98,33 +98,6 @@ proto_client_event_null_handler(Proto_Session *s)
     return 1;
 }
 
-static int
-proto_client_event_update_handler(Proto_Session *s)
-{
-    char mapBuffer[PROTO_SESSION_BUF_SIZE-1];
-    char gameState;
-
-    fprintf(stderr,
-            "proto_client_event_update_handler: invoked for session:\n");
-
-    if (proto_session_body_unmarshall_bytes(s, 0, sizeof(mapBuffer), mapBuffer) < 0)
-       fprintf(stderr,
-            "proto_client_event_update_handler: proto_session_body_unmarshall_bytes failed\n");
-
-    mapBuffer[sizeof(mapBuffer)-1] = 0;
-    gameState = mapBuffer[0];
-    // TODO: Store local copy of map 
-
-    // PRINT MAP
-    // PRINT WIN LOOSE MSG
-
-    fprintf(stderr, " map buffer: %s\n", mapBuffer);
-
-    //proto_session_dump(s);
-    
-    return 1;
-}
-
 static void *
 proto_client_event_dispatcher(void * arg)
 {
@@ -174,9 +147,7 @@ proto_client_init(Proto_Client_Handle *ch)
     for (mt=PROTO_MT_EVENT_BASE_RESERVED_FIRST+1;
          mt<PROTO_MT_EVENT_BASE_RESERVED_LAST; mt++)
         proto_client_set_event_handler(c, mt, proto_client_event_null_handler);
-  
-    proto_client_set_event_handler(c, PROTO_MT_EVENT_BASE_UPDATE, proto_client_event_update_handler);
- 
+    
     *ch = c;
     return 1;
 }
@@ -261,38 +232,20 @@ do_join_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
 }
 
 static int
-do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
+do_leave_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
 {
     int rc;
     Proto_Session *s;
     Proto_Client *c = ch;
-    Proto_Msg_Hdr h;
-    char message[PROTO_SESSION_BUF_SIZE-1];    
-
+    
     s = &(c->rpc_session);
     // marshall
-   
-    bzero(&h, sizeof(h));
-
-    // TODO: Fill the other h fields. In particulat h.sver
-    //       Save a client-local version of sver, pstate, and gstate 
-    h.type = mt;
-    proto_session_hdr_marshall(s, &h); 
-
-    // add data to s->sbuf
-    if (proto_session_body_marshall_char(s, data) < 0)
-	fprintf(stderr,
-                "do_move_rpc: proto_session_body_marshall_char failed. "
-                "Not enough available sbufer space\n");
-
-    //marshall_mtonly(s, mt);
+    
+    marshall_mtonly(s, mt);
     rc = proto_session_rpc(s);
     
     if (rc==1) {
-        //proto_session_body_unmarshall_int(s, 0, &rc);
-        if (proto_session_body_unmarshall_bytes(s, 0, sizeof(message), message) < 0)
-           fprintf(stderr, "do_move_rpc: proto_session_body_unmarshall_bytes failed\n");
-        fprintf(stderr, "%s", message);
+        proto_session_body_unmarshall_int(s, 0, &rc);
     } else {
         c->session_lost_handler(s);
         close(s->fd);
@@ -302,7 +255,7 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
 }
 
 static int
-do_leave_game_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
+do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt)
 {
     int rc;
     Proto_Session *s;
@@ -335,7 +288,7 @@ extern int
 proto_client_move(Proto_Client_Handle ch, char data)
 {
     //return do_generic_dummy_rpc(ch,PROTO_MT_REQ_BASE_MOVE);  
-    return do_move_rpc(ch,PROTO_MT_REQ_BASE_MOVE, data);  
+    return do_move_rpc(ch,PROTO_MT_REQ_BASE_MOVE);  
 }
 
 extern int 
