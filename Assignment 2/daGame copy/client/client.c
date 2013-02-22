@@ -105,7 +105,7 @@ prompt(int menu)
   int ret;
   int c=0;
 
-  if (menu) printf("%s", MenuString);
+  if (menu) fprintf(stderr, "%s", MenuString);
   fflush(stdout);
   c = getchar();
   return c;
@@ -230,6 +230,31 @@ doRPC(Client *C)
   return rc;
 }
 
+int doCMDS(Client *C, char * cmdInput)
+{
+
+if ( strcmp(cmdInput, "connect") == 0 )
+{
+ rc=doRPCCmd(C,'h');
+} 
+
+if ( strcmp(cmdInput, "disconnect") == 0 )
+{
+ rc=doRPCCmd(C,'h');
+}
+
+if ( strcmp(cmdInput, '\n') == 0 )
+{
+ map(clientMap);
+}
+
+//0-9
+
+//where
+
+//quit
+
+}
 
 int 
 docmd(Client *C, char cmd)
