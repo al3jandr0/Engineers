@@ -103,6 +103,16 @@ prompt(int menu)
 void map(char* str)
 {
 	clientMap = str;
+	
+			else if (winner == 4)
+		{
+				ch = 'T';
+				append(str, ch);
+		}
+		else if (winner == 5)
+		{
+				ch = 'U';
+				append(str, ch);
 
 	char winner = *str;
 
@@ -115,6 +125,14 @@ void map(char* str)
 			printf("O is the winner");
 		}
 		else if (winner == 'D')
+		{
+			printf("It's a Draw.");
+		}
+		else if (winner == 'T')
+		{
+			printf("X Quits.");
+		}
+		else if (winner == 'U')
 		{
 			printf("It's a Draw.");
 		}

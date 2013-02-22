@@ -99,6 +99,51 @@ prompt(int menu)
 }
 
 
+void map(char* str)
+{
+	clientMap = str;
+	
+			else if (winner == 4)
+		{
+				ch = 'T';
+				append(str, ch);
+		}
+		else if (winner == 5)
+		{
+				ch = 'U';
+				append(str, ch);
+
+	char winner = *str;
+
+		if (winner  == 'X')
+		{
+			printf("X is the winner.");
+		}
+		else if (winner == 'O')
+		{
+			printf("O is the winner");
+		}
+		else if (winner == 'D')
+		{
+			printf("It's a Draw.");
+		}
+		else if (winner == 'T')
+		{
+			printf("X Quits.");
+		}
+		else if (winner == 'U')
+		{
+			printf("O Quits.");
+		}
+		else
+		{
+		}
+
+		str++;
+        printf("%s\n", str);
+}
+
+
 // FIXME:  this is ugly maybe the speration of the proto_client code and
 //         the game code is dumb
 int

@@ -71,6 +71,16 @@ char * game()
 				ch = 'D';
 				append(str, ch);
 		}
+		else if (winner == 4)
+		{
+				ch = 'T';
+				append(str, ch);
+		}
+		else if (winner == 5)
+		{
+				ch = 'U';
+				append(str, ch);
+		}
 		else
 		{
 				c = 'N';
@@ -114,6 +124,18 @@ char * game()
 		return str;
 }
 
+
+int quit(int id)
+{
+	  if (playerX == id)
+	  { 
+		winner = 4;
+	  }
+	  if (playerY == id)
+	  { 
+		winner = 5;
+	  }
+}
  
  int logic(int id, int go)
  {
@@ -168,4 +190,6 @@ char * game()
 		game();
 		return 2;
 		}
+		
+		return 3;
 }
