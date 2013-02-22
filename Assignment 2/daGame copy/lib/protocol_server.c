@@ -31,7 +31,7 @@
 #include "protocol.h"
 #include "protocol_utils.h"
 #include "protocol_server.h"
-#include "./../Tictactoe/TicTacToe.h"
+#include "./../lib/TicTacToe.h"
 
 #define PROTO_SERVER_MAX_EVENT_SUBSCRIBERS 1024
 
@@ -42,7 +42,6 @@ char *gameReplyMsg[] = { "Not your turn yet!\n",  // 0
                          NULL,                    // 3
                          NULL,                    // 4
                          NULL };                  // 5
-      `
 
 struct {
     FDType   RPCListenFD;
@@ -357,7 +356,7 @@ proto_server_mt_move_handler(Proto_Session *s)
     Proto_Msg_Hdr h;
     char position;
     char reply[PROTO_SESSION_BUF_SIZE-1];
-    int TicTac;
+    int TicTac, intchar;
 
     fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
     //proto_session_dump(s);
@@ -377,8 +376,10 @@ proto_server_mt_move_handler(Proto_Session *s)
      */
     // int func( int fd, char position ) 
     // TODO: Lock
-    TicTac = logic( s->fd, position - '0');
+    intchar = position - '0';
+    TicTac = logic( s->fd, intchar);
     // TODO: unLock
+    fprintf(stderr, "%d  intchar = %d\n", s->fd, intchar); // DEBUGING
     fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
     fprintf(stderr, "%d  move: %c\n", s->fd, position);   // DEBUGING
 

@@ -29,6 +29,8 @@
 
 #define STRLEN 81
 
+char * clientMap;
+
 struct Globals {
   char host[STRLEN];
   PortType port;
@@ -103,15 +105,6 @@ void map(char* str)
 {
 	clientMap = str;
 	
-			else if (winner == 4)
-		{
-				ch = 'T';
-				append(str, ch);
-		}
-		else if (winner == 5)
-		{
-				ch = 'U';
-				append(str, ch);
 
 	char winner = *str;
 
