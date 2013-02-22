@@ -30,7 +30,7 @@
 #include "protocol.h"
 #include "protocol_utils.h"
 #include "protocol_client.h"
-
+#include "./../Tictactoe/TicTacToe.h"
 
 typedef struct {
     Proto_Session rpc_session;

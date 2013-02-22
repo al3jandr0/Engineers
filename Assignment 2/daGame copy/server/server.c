@@ -27,6 +27,7 @@
 #include "../lib/types.h"
 #include "../lib/protocol_server.h"
 #include "../lib/protocol_utils.h"
+#include "../Tictactoe/TicTacToe.c"
 
 int 
 doUpdateClients(void)

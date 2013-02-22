@@ -31,6 +31,7 @@
 #include "protocol.h"
 #include "protocol_utils.h"
 #include "protocol_server.h"
+#include "./../Tictactoe/TicTacToe.h"
 
 #define PROTO_SERVER_MAX_EVENT_SUBSCRIBERS 1024
 
