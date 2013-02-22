@@ -30,6 +30,8 @@
 #define STRLEN 81
 
 char * clientMap;
+int playing = 0;
+char whoami;
 
 struct Globals {
   char host[STRLEN];
@@ -90,7 +92,13 @@ startConnection(Client *C, char *host, PortType port, Proto_MT_Handler h)
 int
 prompt(int menu) 
 {
-  static char MenuString[] = "\nclient> ";
+  static char MenuString[] = "\n?> ";
+  if(whoami == 'X') 
+  	static char MenuString[] = "\nX> ";
+  
+  if(whoami == 'Y') 
+  	static char MenuString[] = "\nY> ";
+  
   int ret;
   int c=0;
 
@@ -111,29 +119,45 @@ void map(char* str)
 		if (winner  == 'X')
 		{
 			printf("X is the winner.");
+			if (whoami == 'X') fprintf(stderr, "\n You win! \n");
+			if (whoami == 'Y') fprintf(stderr, "\n You lose! \n");
+			playing = 2; // done playing
 		}
 		else if (winner == 'O')
 		{
 			printf("O is the winner");
+			if (whoami == 'X') fprintf(stderr, "\n You lose! \n");
+			if (whoami == 'O') fprintf(stderr, "\n You win! \n");
+			playing = 2; // done playing
 		}
 		else if (winner == 'D')
 		{
 			printf("It's a Draw.");
+			playing = 2; // done playing
 		}
 		else if (winner == 'T')
 		{
 			printf("X Quits.");
+			if (whoami == 'X') fprintf(stderr, "\n You quit - You lose! \n");
+			if (whoami == 'O') fprintf(stderr, "\n Other side quit - You win! \n");
+			playing = 2; // done playing
 		}
 		else if (winner == 'U')
 		{
 			printf("O Quits.");
+			if (whoami == 'X') fprintf(stderr, "\n Other side quits - You win! \n");
+			if (whoami == 'O') fprintf(stderr, "\n You  quit - You lose! \n");
+			playing = 2; // done playing
 		}
 		else
 		{
+			playing = 1; //playing game
 		}
 
 		str++;
-        printf("%s\n", str);
+
+if (playing == 1)
+        fprintf(stderr,"\n%s\n", str);
 }
 
 
@@ -162,9 +186,11 @@ doRPCCmd(Client *C, char c)
     {
       rc = proto_client_hello(C->ph);
       printf("hello: rc=%x\n", rc);
-      if ( rc == 1 )  printf("Connected to <ip:port>: You are X’s\n");// get port from globals
-      if ( rc == 2 )  printf("Connected to <ip:port>: You are Y’s\n");// get port from globals
-      if ( rc == 3 ) printf("Not able to connect to <ip:port>\n");// get port from globals
+      if ( rc == 1 ) { printf("Connected to <%s:%d>: You are X’s\n", globals.host, globals.port);// get port from globals
+			whoami = 'X';}
+      if ( rc == 2 ) { printf("Connected to <%s:%d>: You are Y’s\n", globals.host, globals.port);// get port from globals
+			whoami = 'O';}
+      if ( rc == 3 ) printf("Not able to connect to <%s:%d>\n", globals.host, globals.port);// get port from globals
       if (rc > 0) game_process_reply(C);
     }
     break;
@@ -174,6 +200,7 @@ doRPCCmd(Client *C, char c)
     break;
   case 'g':
     rc = proto_client_goodbye(C->ph);
+    playing = 0;
     break;
   default:
     printf("%s: unknown command %c\n", __func__, c);
