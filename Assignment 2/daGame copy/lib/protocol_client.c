@@ -107,7 +107,7 @@ proto_client_event_update_handler(Proto_Session *s)
     fprintf(stderr,
             "proto_client_event_update_handler: invoked for session:\n");
 
-    if (proto_session_body_unmarshall_bytes(s, 0, sizeof(mapBuffer), mapBuffer) < 0)
+    if (proto_session_body_unmarshall_bytes(s, 0, sizeof(mapBuffer), &mapBuffer[0]) < 0)
        fprintf(stderr,
             "proto_client_event_update_handler: proto_session_body_unmarshall_bytes failed\n");
 
@@ -118,7 +118,9 @@ proto_client_event_update_handler(Proto_Session *s)
     // PRINT MAP
     // PRINT WIN LOOSE MSG
 
-    fprintf(stderr, " map buffer: %s\n", mapBuffer);
+    fprintf(stderr, "map buffer:\n%s\n", mapBuffer);  //DEBUG
+    fprintf(stderr, "game():\n");  //DEBUG
+    map(&mapBuffer[0]);
 
     //proto_session_dump(s);
     
@@ -290,7 +292,7 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     
     if (rc==1) {
         //proto_session_body_unmarshall_int(s, 0, &rc);
-        if (proto_session_body_unmarshall_bytes(s, 0, sizeof(message), message) < 0)
+        if (proto_session_body_unmarshall_bytes(s, 0, sizeof(message), &message[0]) < 0)
            fprintf(stderr, "do_move_rpc: proto_session_body_unmarshall_bytes failed\n");
         fprintf(stderr, "%s", message);
     } else {

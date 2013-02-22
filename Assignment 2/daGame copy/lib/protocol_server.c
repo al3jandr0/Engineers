@@ -190,9 +190,13 @@ doUpdateClientsGame(void)
 {
   Proto_Session *s;
   Proto_Msg_Hdr hdr;
-  char map[PROTO_SESSION_BUF_SIZE-1];
+  char mapBuffer[PROTO_SESSION_BUF_SIZE-1];
+  //int ii;
 
-  bzero(&map, sizeof(map)); 
+  fprintf(stderr, "doUpdateClientsGame called\n");  // DEBUG 
+
+  //for (ii =0; ii < sizeof(mapBuffer); ii++)
+  //	mapBuffer[ii]=0;
   // DEBUG
   //map[0] = 'M'; map[1] = 'A';map[2] = 'P';//map[3] = 0; 
 
@@ -203,8 +207,14 @@ doUpdateClientsGame(void)
 
   // TODO: change map + offset_1
   // lock ?
-  strncpy(map, game(), sizeof(map));
-  if (proto_session_body_marshall_bytes(s, sizeof(map), map) < 0)
+  //strncpy(&mapBuffer[0], game(), sizeof(mapBuffer));
+ 
+  fprintf(stderr, "doUpdateClientsGame:One\n");  // DEBUG 
+  game(&mapBuffer[0]);
+
+  fprintf(stderr, "doUpdateClientsGame:\n");  // DEBUG 
+
+  if (proto_session_body_marshall_bytes(s, sizeof(mapBuffer), &mapBuffer[0]) < 0)
      fprintf(stderr, "doUpdateClientsGame: proto_session_body_marshall_bytes failed\n"); 
   proto_server_post_event();
   return 1;
@@ -392,10 +402,10 @@ proto_server_mt_move_handler(Proto_Session *s)
     
     // proto_session_body_marshall_int(s, 0x00000002);
     // reply with message from TicTacToe
-    bzero(reply, sizeof(reply));
+    bzero(&reply[0], sizeof(reply));
     if (TicTac < 2) 
        strncpy(reply, gameReplyMsg[TicTac], sizeof(reply) - 1 );
-    if (proto_session_body_marshall_bytes(s, sizeof(reply), reply) < 0 )
+    if (proto_session_body_marshall_bytes(s, sizeof(reply), &reply[0]) < 0 )
        fprintf(stderr, "proto_server_mt_move_handler: "
                "proto_session_body_marshall_bytes failed\n");
                                    
