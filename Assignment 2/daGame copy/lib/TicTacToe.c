@@ -136,15 +136,17 @@ int removePlayer(int id)
 	  if (playerX == id)
 	  { 
 		winner = 4;
+		resetGame();
+		return 1;
 	  }
-	  if (playerY == id)
+	  else if (playerY == id)
 	  { 
 		winner = 5;
+		resetGame();
+		return 1;
 	  }
-
-resetGame();
-
-return 1;
+	  else 
+		return 2;
 }
 
 void resetGame()
@@ -163,6 +165,8 @@ board[1][2] = '6';
 board[2][0] = '7';
 board[2][1] = '8';
 board[2][2] = '9';
+
+winner = 0;
 
 turn = 0;
 }
@@ -240,12 +244,10 @@ turn = 0;
         if (board[1][1] == 'X')
 {
 			winner = 1;
-resetGame();
 }
 		else 
 {
 			winner = 2;
-resetGame();
 }
 		return 2;
 
@@ -264,12 +266,10 @@ resetGame();
                     if ((board[line][0] ==  'X' && board[line][1] == 'X' && board[line][2] == 'X') || (board[0][line] == 'X' && board[1][line] == 'X' && board[2][line] == 'X' ))
 {
 						winner = 1;
-resetGame();
 }
 					else 
 {
 						winner = 2;
-resetGame();
 }
 			return 2;
 
@@ -282,7 +282,6 @@ resetGame();
 	if((board[0][0] > '9' && board[0][1] > '9' && board[0][2] > '9' && board[1][0] > '9' && board[1][1] > '9' && board[1][2] > '9' && board[2][0] > '9' && board[2][1] > '9' && board[2][2] > '9')){
 
         winner = 3;
-resetGame();
 		return 2;
 
 		}
