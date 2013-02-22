@@ -200,6 +200,51 @@ doRPCCmd(Client *C, char c)
     scanf("%c", &c);
     rc = proto_client_move(C->ph, c);
     break;
+  case '1':
+    rc = proto_client_move(C->ph, '1');
+    break;
+  case '2':
+    rc = proto_client_move(C->ph, '2');
+    break;
+  case '3':
+    rc = proto_client_move(C->ph, '3');
+    break;
+  case '4':
+    rc = proto_client_move(C->ph, '4');
+    break;
+  case '5':
+    rc = proto_client_move(C->ph, '5');
+    break;
+  case '6':
+    rc = proto_client_move(C->ph, '6');
+    break;
+  case '7':
+    rc = proto_client_move(C->ph, '7');
+    break;
+  case '8':
+    rc = proto_client_move(C->ph, '8');
+    break;
+  case '9':
+    rc = proto_client_move(C->ph, '9');
+    break;
+  case 'g':
+    rc = proto_client_goodbye(C->ph);
+    break;
+  default:
+    printf("%s: unknown command %c\n", __func__, c);
+  }
+  // NULL MT OVERRIDE ;-)
+  printf("%s: rc=0x%x\n", __func__, rc);
+  if (rc == 0xdeadbeef) rc=1;
+  return rc;
+}  
+
+
+/*
+case 'm':
+    scanf("%c", &c);
+    rc = proto_client_move(C->ph, c);
+    break;
   case 'g':
     rc = proto_client_goodbye(C->ph);
     playing = 0;
@@ -212,6 +257,7 @@ doRPCCmd(Client *C, char c)
   if (rc == 0xdeadbeef) rc=1;
   return rc;
 }
+*/
 
 int
 doRPC(Client *C)
@@ -229,33 +275,10 @@ doRPC(Client *C)
 
   return rc;
 }
-/*
-int doCMDS(Client *C, char * cmdInput)
-{
 
-if ( strcmp(cmdInput, "connect") == 0 )
-{
- rc=doRPCCmd(C,'h');
-} 
 
-if ( strcmp(cmdInput, "disconnect") == 0 )
-{
- rc=doRPCCmd(C,'h');
-}
 
-if ( strcmp(cmdInput, '\n') == 0 )
-{
- map(clientMap);
-}
 
-//0-9
-
-//where
-
-//quit
-
-}
-*/
 int 
 docmd(Client *C, char cmd)
 {
@@ -283,6 +306,81 @@ docmd(Client *C, char cmd)
   return rc;
 }
 
+int doCMDS(Client *C, char * cmdInput)
+{
+int rc =-1;
+
+
+if ( strcmp(cmdInput, "connect") == 0 )
+{
+ rc=doRPCCmd(C,'h');
+} 
+
+if ( strcmp(cmdInput, "disconnect") == 0 )
+{
+ rc=doRPCCmd(C,'h');
+}
+
+if ( strcmp(cmdInput, '\n') == 0 )
+{
+ map(clientMap);
+}
+
+
+if (strcmp(cmdInput, "1") == 0)
+{
+   rc=doRPCCmd(C,'1');
+}
+if (strcmp(cmdInput, "2") == 0)
+{
+   rc=doRPCCmd(C,'2');
+}
+if (strcmp(cmdInput, "3") == 0)
+{
+   rc=doRPCCmd(C,'3');
+}
+if (strcmp(cmdInput, "4") == 0)
+{
+   rc=doRPCCmd(C,'4');
+}
+if (strcmp(cmdInput, "5") == 0)
+{
+   rc=doRPCCmd(C,'5');
+}
+if (strcmp(cmdInput, "6") == 0)
+{
+   rc=doRPCCmd(C,'6');
+}
+if (strcmp(cmdInput, "7") == 0)
+{
+   rc=doRPCCmd(C,'7');
+}
+if (strcmp(cmdInput, "8") == 0)
+{
+   rc=doRPCCmd(C,'8');
+}
+if (strcmp(cmdInput, "9") == 0)
+{
+   rc=doRPCCmd(C,'9');
+}
+if (strcmp(cmdInput, "where") == 0)
+{
+   //printf("Connected to <ip:port>: You are X’s\n");// get port from globals
+   printf("Connected to <%s:%d>.\n", globals.host, globals.port);// get port from globals
+}
+if (strcmp(cmdInput, "quit") == 0)
+{
+   docmd(C,'q');
+}
+
+//0-9
+
+//where
+
+//quit
+
+return rc;
+}
 void *
 shell(void *arg)
 {
@@ -290,8 +388,10 @@ shell(void *arg)
   char c;
   int rc;
   int menu=1;
+  char * longcommand;
 
   while (1) {
+    if ((longcommand=prompt(menu))!=0) rc=doCMDS(C, longcommand);
     if ((c=prompt(menu))!=0) rc=docmd(C, c);
     if (rc<0) break;
     if (rc==1) menu=1; else menu=0;
