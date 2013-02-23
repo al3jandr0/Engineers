@@ -292,11 +292,11 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     // TODO: Fill the other h fields. In particulat h.sver
     //       Save a client-local version of sver, pstate, and gstate 
     h.type = mt;
-   // pthread_mutex_lock(&gameMap_clientVersion_mutex);
-   //    gameMap_clientVersion.raw;
+    pthread_mutex_lock(&gameMap_clientVersion_mutex);
+    h.sver.raw = gameMap_clientVersion.raw;
+    pthread_mutex_unlock(&gameMap_clientVersion_mutex);
 
-
-proto_session_hdr_marshall(s, &h); 
+    proto_session_hdr_marshall(s, &h); 
 
     // add data to s->sbuf
     if (proto_session_body_marshall_char(s, data) < 0)

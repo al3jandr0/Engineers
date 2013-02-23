@@ -374,38 +374,46 @@ proto_server_mt_move_handler(Proto_Session *s)
     Proto_Msg_Hdr h;
     char position;
     char reply[PROTO_SESSION_BUF_SIZE-1];
-    int TicTac, intchar;
+    int TicTac, intchar, doMove;
 
     if (proto_debug()) 
     fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
     //proto_session_dump(s);
 
     // read msg here
+    doMove = 0;
+    bzero(&h, sizeof(h));
     proto_session_body_unmarshall_char(s, 0, &position);
+    proto_session_hdr_unmarshall(s, &h);
 
     // call TicTacToe function. This function should return an int which represents the following 
     /* 0  “Not your turn yet!”
      * 1  “Not a valid move!”  
      */
-    // int func( int fd, char position ) 
+    // int func( int fd, char position )
     intchar = position - '0';
-    pthread_mutex_lock(&game_mutex);
-    TicTac = logic( s->fd, intchar);
-    pthread_mutex_unlock(&game_mutex);
-    // TODO: if debug func
+    pthread_mutex_lock(&gameMapVersion_mutex);
+    if (h.sver.raw == gameMapVersion.raw)
+        doMove = 1;
+    else
+       TicTac = 3;
+    pthread_mutex_unlock(&gameMapVersion_mutex);
+    
+    if (doMove)
+    {
+       pthread_mutex_lock(&game_mutex);
+       TicTac = logic( s->fd, intchar);
+       pthread_mutex_unlock(&game_mutex);
+    }
     if (proto_debug()) 
     {
        fprintf(stderr, "%d  intchar = %d\n", s->fd, intchar); // DEBUGING
        fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
        fprintf(stderr, "%d  move: %c\n", s->fd, position);   // DEBUGING
     }
-    bzero(&h, sizeof(h));
-    h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
     
-    // proto_session_body_marshall_int(s, 0x00000002);
-    // reply with message from TicTacToe
     bzero(&reply[0], sizeof(reply));
     if (TicTac < 2) 
        strncpy(reply, gameReplyMsg[TicTac], sizeof(reply) - 1 );
@@ -415,7 +423,7 @@ proto_server_mt_move_handler(Proto_Session *s)
                                    
     rc=proto_session_send_msg(s,1);
 
-    if ( TicTac > 1 )
+    if ( TicTac > 1 ) // && if doMove == 0 ?
        doUpdateClientsGame(1);
     if ( TicTac == 2  ) /* Game is over because of a successfull move*/
     {
