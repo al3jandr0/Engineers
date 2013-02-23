@@ -15,7 +15,7 @@ The
     <td>Gurwinder Singh</td><td>gsinghny@bu.edu</td>
   </tr>
   <tr>
-    <td><s>Matthew Lee</s></td><td><s>matt2lee@bu.edu</s></td>
+    <td>~Matthew Lee~</td><td>~matt2lee@bu.edu~</td>
   </tr>
   <tr>
     <td>Alejandro Pelaez Lechuga</td><td>apelaez@bu.edu</td>
