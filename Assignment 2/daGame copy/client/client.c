@@ -88,6 +88,80 @@ startConnection(Client *C, char *host, PortType port, Proto_MT_Handler h)
   return 0;
 }
 
+void quit() // write error message and quit
+{
+    fprintf(stderr, "memory exhausted\n");
+    exit(1);
+}
+
+//returns the size of a character array using a pointer to the first element of the character array
+int size(char *ptr)
+{
+    //variable used to access the subsequent array elements.
+    int offset = 0;
+    //variable that counts the number of elements in your array
+    int count = 0;
+
+    //While loop that tests whether the end of the array has been reached
+    while (*(ptr + offset) != '\0')
+    {
+        //increment the count variable
+        ++count;
+        //advance to the next element of the array
+        ++offset;
+    }
+    //return the size of the array
+    return count;
+}
+
+char * specialPrompt(int menu)
+{
+	int max = 20
+    char* cmdInputs = (char*)malloc(max); // allocate buffer
+    if (cmdInputs == 0) quit();
+	
+	if(whoami == 'X') 
+	{
+        fprintf(stderr, "\nX> " );
+	}
+	else if(whoami == 'O') 
+	{
+        fprintf(stderr, "\nO> " );
+	}
+	else 
+	    fprintf(stderr, "\n?> " );
+	
+	
+    while (true) { // skip leading whitespace
+        int c = getchar();
+        if (c == EOF) break; // end of file
+        if (!isspace(c)) {
+             ungetc(c, stdin);
+             break;
+        }
+    }
+
+    int i = 0;
+    while (true) {
+        int c = getchar();
+        if (isspace(c) || c == EOF) // at end, add terminating zero
+            cmdInputs[i] = 0;
+            break;
+        }
+        cmdInputs[i] = c;
+        if (i==max-1) { // buffer full
+            max = max+max;
+            cmdInputs = (char*)realloc(cmdInputs,max); // get a new and larger buffer
+            if (cmdInputs == 0) quit();
+        }
+        i++;
+		
+		 printf("The command is %s\n", cmdInputs);
+		 
+		 return cmdInputs;
+}
+
+
 
 int
 prompt(int menu) 
@@ -239,26 +313,6 @@ doRPCCmd(Client *C, char c)
   return rc;
 }  
 
-
-/*
-case 'm':
-    scanf("%c", &c);
-    rc = proto_client_move(C->ph, c);
-    break;
-  case 'g':
-    rc = proto_client_goodbye(C->ph);
-    playing = 0;
-    break;
-  default:
-    printf("%s: unknown command %c\n", __func__, c);
-  }
-  // NULL MT OVERRIDE ;-)
-  printf("%s: rc=0x%x\n", __func__, rc);
-  if (rc == 0xdeadbeef) rc=1;
-  return rc;
-}
-*/
-
 int
 doRPC(Client *C)
 {
@@ -310,7 +364,6 @@ int doCMDS(Client *C, char * cmdInput)
 {
 int rc =-1;
 
-
 if ( strcmp(cmdInput, "connect") == 0 )
 {
  rc=doRPCCmd(C,'h');
@@ -325,7 +378,6 @@ if ( strcmp(cmdInput, '\n') == 0 )
 {
  map(clientMap);
 }
-
 
 if (strcmp(cmdInput, "1") == 0)
 {
@@ -391,8 +443,17 @@ shell(void *arg)
   char * longcommand;
 
   while (1) {
-    if ((longcommand=prompt(menu))!=0) rc=doCMDS(C, longcommand);
-    if ((c=prompt(menu))!=0) rc=docmd(C, c);
+	(longcommand=specialPrompt(menu)) 
+	if (size(longcommand) > 1)
+		rc=doCMDS(C, longcommand);
+	else 
+	{
+	 c = longcommand[0];
+	 if (c != 0)
+		rc=docmd(C, c);
+	}
+    //if ((longcommand=specialPrompt(menu)) ) rc=doCMDS(C, longcommand);
+    //if ((c=prompt(menu))!=0) rc=docmd(C, c);
     if (rc<0) break;
     if (rc==1) menu=1; else menu=0;
   }
