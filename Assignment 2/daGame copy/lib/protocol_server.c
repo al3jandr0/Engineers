@@ -201,13 +201,15 @@ doUpdateClientsGame(int updateMapVersion)
   fprintf(stderr, "doUpdateClientsGame called\n");  // DEBUG 
 
   bzero(&mapBuffer[0], sizeof(mapBuffer));
+  bzero(&hdr, sizeof(hdr));
 
   s = proto_server_event_session();
   // set sver if nescesary
   hdr.type = PROTO_MT_EVENT_BASE_UPDATE;
   pthread_mutex_lock(&gameMapVersion_mutex);
   if (updateMapVersion)
-     hdr.sver.raw = ++gameMapVersion.raw;
+     gameMapVersion.raw++;
+  hdr.sver.raw = gameMapVersion.raw;
   pthread_mutex_unlock(&gameMapVersion_mutex); 
   proto_session_hdr_marshall(s, &hdr);
 
@@ -316,7 +318,7 @@ proto_server_mt_null_handler(Proto_Session *s)
     
     // setup dummy reply header : set correct reply message type and
     // everything else empty
-    bzero(&h, sizeof(s));
+    bzero(&h, sizeof(h));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
@@ -397,7 +399,7 @@ proto_server_mt_move_handler(Proto_Session *s)
        fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
        fprintf(stderr, "%d  move: %c\n", s->fd, position);   // DEBUGING
     }
-    bzero(&h, sizeof(s));
+    bzero(&h, sizeof(h));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
@@ -420,6 +422,9 @@ proto_server_mt_move_handler(Proto_Session *s)
         pthread_mutex_lock(&game_mutex);
 	resetGame();
         pthread_mutex_unlock(&game_mutex);
+        pthread_mutex_lock(&gameMapVersion_mutex);
+        gameMapVersion.raw++;
+        pthread_mutex_unlock(&gameMapVersion_mutex);
     }
     return rc;
 }
@@ -443,7 +448,7 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     if (proto_debug())
     fprintf(stderr, "%d  quit() = %d\n", s->fd, qq); // DEBUGING
 
-    bzero(&h, sizeof(s));
+    bzero(&h, sizeof(h));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
     proto_session_hdr_marshall(s, &h);
@@ -461,6 +466,9 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     {
        doUpdateClientsGame(1);
        resetGame();
+       pthread_mutex_lock(&gameMapVersion_mutex);
+       gameMapVersion.raw++;
+       pthread_mutex_unlock(&gameMapVersion_mutex);
     }
     return rc;
 }

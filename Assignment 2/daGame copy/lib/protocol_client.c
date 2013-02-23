@@ -108,11 +108,11 @@ proto_client_event_update_handler(Proto_Session *s)
     fprintf(stderr,
             "proto_client_event_update_handler: invoked for session:\n");
 
-    bzero(&h, sizeof(s));
+    bzero(&h, sizeof(h));
     proto_session_hdr_unmarshall(s, &h);
 
     if (proto_debug())
-    fprintf(stderr, "serverMapVersion = %llu\n", h.sver.raw);
+       fprintf(stderr, "serverMapVersion = %llu\n", h.sver.raw);
     pthread_mutex_lock(&gameMap_clientVersion_mutex);
     if (h.sver.raw > gameMap_clientVersion.raw)
     {
@@ -292,7 +292,11 @@ do_move_rpc(Proto_Client_Handle ch, Proto_Msg_Types mt, char data)
     // TODO: Fill the other h fields. In particulat h.sver
     //       Save a client-local version of sver, pstate, and gstate 
     h.type = mt;
-    proto_session_hdr_marshall(s, &h); 
+   // pthread_mutex_lock(&gameMap_clientVersion_mutex);
+   //    gameMap_clientVersion.raw;
+
+
+proto_session_hdr_marshall(s, &h); 
 
     // add data to s->sbuf
     if (proto_session_body_marshall_char(s, data) < 0)

@@ -145,7 +145,9 @@ if (playing == 1)
 {
 if(c == '\n')
 {
-	map(clientMap);      
+    pthread_mutex_lock(&gameMap_clientVersion_mutex);
+	map(&gameMap_clientCopy[0]);      
+    pthread_mutex_unlock(&gameMap_clientVersion_mutex);
 
 	if(whoami == 'X') 
 	{
@@ -325,13 +327,17 @@ int rc=-1;
       if ( rc == 2 ) 
       { 
          printf("Connected to <%s:%d>: You are Y’s\n", globals.host, globals.port);// get port from globals
-         //pthread_mutex_lock(&gameMap_clientVersion_mutex);
+         pthread_mutex_lock(&gameMap_clientVersion_mutex);
          whoami = 'O';
 	 playing = 1;
-         //pthread_mutex_unlock(&gameMap_clientVersion_mutex);
+         pthread_mutex_unlock(&gameMap_clientVersion_mutex);
       }
       if ( rc == 3 ) printf("Not able to connect to <%s:%d>\n", globals.host, globals.port);// get port from globals
-      if (rc > 0) game_process_reply(C);
+          pthread_mutex_lock(&gameMap_clientVersion_mutex);
+	map(&gameMap_clientCopy[0]);      
+    pthread_mutex_unlock(&gameMap_clientVersion_mutex);
+
+       if (rc > 0) game_process_reply(C);
     }
     break;
   case 'm':
@@ -449,6 +455,7 @@ printf("docmd open1\n");
     rc=doRPCCmd(C,'9');
     break;
   case 'q':
+    doRPCCmd(C,'g');
     rc=-1;
     break;
   case '\n':
