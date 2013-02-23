@@ -26,5 +26,5 @@ client_objs = $(objs)
 libs = $(DAGAMELIB) -lpthread
 
 client: $(client_objs) $(DAGAMELIBARCHIVE)
-	gcc $(CFLAGS) -o $@ $(client_objs) $(libs) 
+	gcc -g $(CFLAGS) -o $@ $(client_objs) $(libs) 
 
