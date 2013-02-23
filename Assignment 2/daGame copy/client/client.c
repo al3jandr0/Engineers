@@ -31,7 +31,7 @@
 
 char * clientMap;
 int playing = 0;
-char whoami;
+char whoami = 0;
 
 struct Globals {
   char host[STRLEN];
@@ -64,6 +64,7 @@ update_event_handler(Proto_Session *s)
   Client *C = proto_session_get_data(s);
 
   fprintf(stderr, "%s: called", __func__);
+	
   return 1;
 }
 
@@ -124,14 +125,19 @@ char * specialPrompt(int menu)
 	if(whoami == 'X') 
 	{
         fprintf(stderr, "\nX> " );
+	 playing = 1;
 	}
 	else if(whoami == 'O') 
 	{
         fprintf(stderr, "\nO> " );
+	 playing = 1;
 	}
 	else 
+	{
 	    fprintf(stderr, "\n?> " );
-	
+	 whoami = 0;
+		playing = 0;
+	}
 	
     while (1) { // skip leading whitespace
         c = getchar();
@@ -159,7 +165,7 @@ char * specialPrompt(int menu)
         i++;
 		}
 		
-		 printf("The command is %s\n", cmdInputs);
+		 //printf("The command is %s\n", cmdInputs);
 		 
 		 return cmdInputs;
 }
@@ -192,7 +198,7 @@ prompt(int menu)
 void map(char* str)
 {
 	clientMap = str;
-	
+//printf("whoamii - %d, playing - %d\n", whoami, playing);
 	char winner = *str;
 
 		if (winner  == 'X')
@@ -240,11 +246,11 @@ str++;
 		}
 		else
 		{
-			playing = 1; //playing game
 		}
 
 		str++;
 
+//printf("whoamii - %d, playing - %d\n", whoami, playing);
 if (playing == 1)
         fprintf(stderr,"\n%s\n", str);
 }
@@ -275,10 +281,22 @@ doRPCCmd(Client *C, char c)
     {
       rc = proto_client_hello(C->ph);
       printf("hello: rc=%x\n", rc);
-      if ( rc == 1 ) { printf("Connected to <%s:%d>: You are X’s\n", globals.host, globals.port);// get port from globals
-			whoami = 'X';}
-      if ( rc == 2 ) { printf("Connected to <%s:%d>: You are Y’s\n", globals.host, globals.port);// get port from globals
-			whoami = 'O';}
+      if ( rc == 1 ) 
+      { 
+         printf("Connected to <%s:%d>: You are X’s\n", globals.host, globals.port);// get port from globals
+         pthread_mutex_lock(&gameMap_clientVersion_mutex);
+         whoami = 'X';
+	 playing = 1;
+         pthread_mutex_unlock(&gameMap_clientVersion_mutex);
+      }
+      if ( rc == 2 ) 
+      { 
+         printf("Connected to <%s:%d>: You are Y’s\n", globals.host, globals.port);// get port from globals
+         pthread_mutex_lock(&gameMap_clientVersion_mutex);
+         whoami = 'O';
+	 playing = 1;
+         pthread_mutex_unlock(&gameMap_clientVersion_mutex);
+      }
       if ( rc == 3 ) printf("Not able to connect to <%s:%d>\n", globals.host, globals.port);// get port from globals
       if (rc > 0) game_process_reply(C);
     }
@@ -390,6 +408,8 @@ docmd(Client *C, char cmd)
     rc=-1;
     break;
   case '\n':
+   printf("CALLED\n"); 
+   map(clientMap);
     rc=1;
     break;
   default:
@@ -408,13 +428,13 @@ if ( strcmp(cmdInput, "connect") == 0 )
  return rc;
 } 
 
-if ( strcmp(cmdInput, "disconnect") == 0 )
+else if ( strcmp(cmdInput, "disconnect") == 0 )
 {
- rc=doRPCCmd(C,'h');
+ rc=doRPCCmd(C,'g');
  whoami = '?';
  return rc;
 }
-
+/*
 if ( strcmp(cmdInput, '\n') == 0 )
 {
  map(clientMap);
@@ -470,18 +490,25 @@ if (strcmp(cmdInput, "9") == 0)
    rc=doRPCCmd(C,'9');
    return rc;
 }
-if (strcmp(cmdInput, "where") == 0)
+*/
+else if (strcmp(cmdInput, "where") == 0)
 {
    //printf("Connected to <ip:port>: You are X’s\n");// get port from globals
    printf("Connected to <%s:%d>.\n", globals.host, globals.port);// get port from globals
    return rc;
 }
-if (strcmp(cmdInput, "quit") == 0)
+else if (strcmp(cmdInput, "quit") == 0)
 {
    rc = docmd(C,'q');
    return rc;
 }
-
+else
+{
+printf("\n%d\n", cmdInput[0]);
+  rc = docmd(C,cmdInput[0]); 
+  printf("Unkown Command\n");
+  return rc;
+}
 //0-9
 
 //where
@@ -513,7 +540,6 @@ shell(void *arg)
 	 if (c != 0)
 		rc=docmd(C, c);
 	}
-	  fprintf(stderr, "hi\n");
 
     //if ((longcommand=specialPrompt(menu)) ) rc=doCMDS(C, longcommand);
     //if ((c=prompt(menu))!=0) rc=docmd(C, c);
