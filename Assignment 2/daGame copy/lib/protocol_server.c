@@ -197,6 +197,7 @@ doUpdateClientsGame(int updateMapVersion)
   Proto_Msg_Hdr hdr;
   char mapBuffer[PROTO_SESSION_BUF_SIZE-1];
 
+  if (proto_debug())
   fprintf(stderr, "doUpdateClientsGame called\n");  // DEBUG 
 
   bzero(&mapBuffer[0], sizeof(mapBuffer));
@@ -211,6 +212,9 @@ doUpdateClientsGame(int updateMapVersion)
   proto_session_hdr_marshall(s, &hdr);
 
   game(&mapBuffer[0]);
+
+  if (proto_debug())
+  fprintf(stderr, "doUpdateClientsGame: mapBuffer\n%s\n", mapBuffer); 
 
   if (proto_session_body_marshall_bytes(s, sizeof(mapBuffer), &mapBuffer[0]) < 0)
      fprintf(stderr, "doUpdateClientsGame: proto_session_body_marshall_bytes failed\n"); 
@@ -331,8 +335,9 @@ proto_server_mt_join_game_handler(Proto_Session *s)
     int rc=1;
     Proto_Msg_Hdr h;
     int player;
-    
-    fprintf(stderr, "proto_server_mt_join_game_handler: invoked for session:\n");
+  
+    if (proto_debug()) 
+       fprintf(stderr, "proto_server_mt_join_game_handler: invoked for session:\n");
     //proto_session_dump(s);
    
     // TicTacToe game add a player and return a either 1 or 2 or -1.
@@ -342,6 +347,7 @@ proto_server_mt_join_game_handler(Proto_Session *s)
     pthread_mutex_lock(&game_mutex);
     player = addPlayer(s->fd); 
     pthread_mutex_unlock(&game_mutex);
+    if (proto_debug()) 
     fprintf(stderr, "%d  addPlayer() = %d\n", s->fd, player); // DEBUGING
     
     // TODO: versioning. sver
@@ -368,6 +374,7 @@ proto_server_mt_move_handler(Proto_Session *s)
     char reply[PROTO_SESSION_BUF_SIZE-1];
     int TicTac, intchar;
 
+    if (proto_debug()) 
     fprintf(stderr, "proto_server_mt_move_handler: invoked for session:\n");
     //proto_session_dump(s);
 
@@ -384,10 +391,12 @@ proto_server_mt_move_handler(Proto_Session *s)
     TicTac = logic( s->fd, intchar);
     pthread_mutex_unlock(&game_mutex);
     // TODO: if debug func
-    fprintf(stderr, "%d  intchar = %d\n", s->fd, intchar); // DEBUGING
-    fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
-    fprintf(stderr, "%d  move: %c\n", s->fd, position);   // DEBUGING
-
+    if (proto_debug()) 
+    {
+       fprintf(stderr, "%d  intchar = %d\n", s->fd, intchar); // DEBUGING
+       fprintf(stderr, "%d  logic() = %d\n", s->fd, TicTac); // DEBUGING
+       fprintf(stderr, "%d  move: %c\n", s->fd, position);   // DEBUGING
+    }
     bzero(&h, sizeof(s));
     h.type = proto_session_hdr_unmarshall_type(s);
     h.type += PROTO_MT_REP_BASE_RESERVED_FIRST;
@@ -421,15 +430,17 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
     int rc=1;
     Proto_Msg_Hdr h;
     int qq;    
-
-    fprintf(stderr, "proto_server_mt_null_handler: invoked for session:\n");
-    proto_session_dump(s);
+    
+    if (proto_debug())
+    fprintf(stderr, "proto_server_mt_leave_game_handler: invoked for session:\n");
+    //proto_session_dump(s);
    
     // remove player from TicTacToe Game
     pthread_mutex_lock(&game_mutex);
     qq = removePlayer(s->fd);
-    pthread_mutex_lock(&game_mutex);
+    pthread_mutex_unlock(&game_mutex);
 
+    if (proto_debug())
     fprintf(stderr, "%d  quit() = %d\n", s->fd, qq); // DEBUGING
 
     bzero(&h, sizeof(s));
@@ -447,8 +458,10 @@ proto_server_mt_leave_game_handler(Proto_Session *s)
    
     // if rmovePlayer == 1. call update
     if ( qq == 1  )
+    {
        doUpdateClientsGame(1);
-
+       resetGame();
+    }
     return rc;
 }
 

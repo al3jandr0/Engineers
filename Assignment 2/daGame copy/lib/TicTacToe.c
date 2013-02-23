@@ -157,13 +157,11 @@ int removePlayer(int id)
 	  if (playerX == id)
 	  { 
 		winner = 4;
-		resetGame();
 		return 1;
 	  }
 	  else if (playerY == id)
 	  { 
 		winner = 5;
-		resetGame();
 		return 1;
 	  }
 	  else 

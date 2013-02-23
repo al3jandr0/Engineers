@@ -104,16 +104,19 @@ proto_client_event_update_handler(Proto_Session *s)
 {
     Proto_Msg_Hdr h;
 
+    if (proto_debug())
     fprintf(stderr,
             "proto_client_event_update_handler: invoked for session:\n");
 
     bzero(&h, sizeof(s));
     proto_session_hdr_unmarshall(s, &h);
 
+    if (proto_debug())
     fprintf(stderr, "serverMapVersion = %llu\n", h.sver.raw);
     pthread_mutex_lock(&gameMap_clientVersion_mutex);
     if (h.sver.raw > gameMap_clientVersion.raw)
     {
+       if (proto_debug())
        fprintf(stderr, " previous gameMap_clientVersion = %llu\n", gameMap_clientVersion.raw);
        gameMap_clientVersion.raw++; // ++ or equals ?
        if (proto_session_body_unmarshall_bytes(s, 0, sizeof(gameMap_clientCopy), &gameMap_clientCopy[0]) < 0)

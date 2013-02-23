@@ -29,7 +29,7 @@
 
 #define STRLEN 81
 
-char * clientMap;
+char * clientMap = NULL;
 int playing = 0;
 char whoami = 0;
 
@@ -141,7 +141,35 @@ char * specialPrompt(int menu)
 	
     while (1) { // skip leading whitespace
         c = getchar();
-        if (c == EOF) break; // end of file
+if (playing == 1)
+{
+if(c == '\n')
+{
+	map(clientMap);      
+
+	if(whoami == 'X') 
+	{
+        fprintf(stderr, "\nX> " );
+	 playing = 1;
+	}
+	else if(whoami == 'O') 
+	{
+        fprintf(stderr, "\nO> " );
+	 playing = 1;
+	}
+	else 
+	{
+	    fprintf(stderr, "\n?> " );
+	 whoami = 0;
+		playing = 0;
+	}
+	
+}
+}
+else 
+	    fprintf(stderr, "\n?> " );
+
+         if (c == EOF) break; // end of file
         if (!isspace(c)) {
              ungetc(c, stdin);
              break;
@@ -265,6 +293,7 @@ game_process_reply(Client *C)
 
   s = proto_client_rpc_session(C->ph);
 
+  if (proto_debug())
   fprintf(stderr, "%s: do something %p\n", __func__, s);
 
   return 1;
@@ -274,12 +303,16 @@ game_process_reply(Client *C)
 int 
 doRPCCmd(Client *C, char c) 
 {
-  int rc=-1;
+  if (proto_debug())
+printf("doRpCCmd open1\n");
+  
+int rc=-1;
 
   switch (c) {
   case 'h':  
     {
       rc = proto_client_hello(C->ph);
+  if (proto_debug())
       printf("hello: rc=%x\n", rc);
       if ( rc == 1 ) 
       { 
@@ -292,10 +325,10 @@ doRPCCmd(Client *C, char c)
       if ( rc == 2 ) 
       { 
          printf("Connected to <%s:%d>: You are Y’s\n", globals.host, globals.port);// get port from globals
-         pthread_mutex_lock(&gameMap_clientVersion_mutex);
+         //pthread_mutex_lock(&gameMap_clientVersion_mutex);
          whoami = 'O';
 	 playing = 1;
-         pthread_mutex_unlock(&gameMap_clientVersion_mutex);
+         //pthread_mutex_unlock(&gameMap_clientVersion_mutex);
       }
       if ( rc == 3 ) printf("Not able to connect to <%s:%d>\n", globals.host, globals.port);// get port from globals
       if (rc > 0) game_process_reply(C);
@@ -339,15 +372,21 @@ doRPCCmd(Client *C, char c)
     printf("%s: unknown command %c\n", __func__, c);
   }
   // NULL MT OVERRIDE ;-)
+  if (proto_debug())
   printf("%s: rc=0x%x\n", __func__, rc);
   if (rc == 0xdeadbeef) rc=1;
   
+  if (proto_debug())
+printf("doRpCCmd open2\n");
   return rc;
 }  
 
 int
 doRPC(Client *C)
 {
+
+  if (proto_debug())
+printf("doRpC open1\n");
   int rc;
   char c;
 
@@ -355,10 +394,13 @@ doRPC(Client *C)
   scanf("%c", &c);
   rc=doRPCCmd(C,c);
 
+  if (proto_debug())
   printf("doRPC: rc=0x%x\n", rc);
 
   // add TicTacToe message printing here ?
 
+  if (proto_debug())
+printf("doRpC open2\n");
   return rc;
 }
 
@@ -367,6 +409,8 @@ docmd(Client *C, char cmd)
 {
   int rc = 1;
 
+  if (proto_debug())
+printf("docmd open1\n");
   switch (cmd) {
   case 'd':
     proto_debug_on();
@@ -408,6 +452,7 @@ docmd(Client *C, char cmd)
     rc=-1;
     break;
   case '\n':
+  if (proto_debug())
    printf("CALLED\n"); 
    map(clientMap);
     rc=1;
@@ -415,11 +460,17 @@ docmd(Client *C, char cmd)
   default:
     printf("Unkown Command\n");
   }
+
+  if (proto_debug())
+printf("doCmd open2\n");
   return rc;
 }
 
 int doCMDS(Client *C, char * cmdInput)
 {
+
+  if (proto_debug())
+printf("doCMDS open1\n");
 int rc =1;
 
 if ( strcmp(cmdInput, "connect") == 0 )
@@ -502,11 +553,18 @@ else if (strcmp(cmdInput, "quit") == 0)
    rc = docmd(C,'q');
    return rc;
 }
+else if (*cmdInput == '\n')
+{
+  if (proto_debug())
+printf("\nDRINKS!!\n");
+map(clientMap);
+return rc;
+}
 else
 {
-printf("\n%d\n", cmdInput[0]);
+//printf("\n%d\n", cmdInput[0]);
   rc = docmd(C,cmdInput[0]); 
-  printf("Unkown Command\n");
+  fprintf(stderr, "\nUnkown Command\n");
   return rc;
 }
 //0-9
@@ -515,8 +573,11 @@ printf("\n%d\n", cmdInput[0]);
 
 //quit
 
+  if (proto_debug())
+printf("doCMD open2\n");
 return rc;
 }
+
 void *
 shell(void *arg)
 {
