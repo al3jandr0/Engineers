@@ -155,3 +155,40 @@ Add in the new tic tac toe game logic functions needed for the server.
 
 
 Comments/Notes:
+
+------------------------------------------------------------------------------------------------
+
+*********************************************************************Thursday, February 21, 2013
+
+Attendees:
+Gurwinder Singh, gsinghny@bu.edu 
+Alejandro Pelaez Lechuga apelaez@bu.edu
+
+
+Questions:
+Return Values?
+
+
+Decisions:
+move(player, position)
+	return 0 -> Not your turn yet. 
+	return 1 -> Not a valid move
+	return 2 -> Game over 
+	return 3 -> NULL
+addplayer(id)
+	return 1 -> Player X added
+	return 2 -> Player Y added
+	return 3 -> No more players
+clientMAP
+		X -> X wins
+		O -> O wins
+		D -> Draw
+		N -> NULL
+		T -> Other side quits
+		U -> You quit
+
+
+Todo:
+
+
+Comments/Notes:
