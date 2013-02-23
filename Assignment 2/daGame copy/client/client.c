@@ -116,7 +116,8 @@ int size(char *ptr)
 
 char * specialPrompt(int menu)
 {
-	int max = 20
+	int max = 20;
+	int c ;
     char* cmdInputs = (char*)malloc(max); // allocate buffer
     if (cmdInputs == 0) quit();
 	
@@ -132,8 +133,8 @@ char * specialPrompt(int menu)
 	    fprintf(stderr, "\n?> " );
 	
 	
-    while (true) { // skip leading whitespace
-        int c = getchar();
+    while (1) { // skip leading whitespace
+        c = getchar();
         if (c == EOF) break; // end of file
         if (!isspace(c)) {
              ungetc(c, stdin);
@@ -142,9 +143,10 @@ char * specialPrompt(int menu)
     }
 
     int i = 0;
-    while (true) {
-        int c = getchar();
+    while (1) {
+        c = getchar();
         if (isspace(c) || c == EOF) // at end, add terminating zero
+		{
             cmdInputs[i] = 0;
             break;
         }
@@ -155,6 +157,7 @@ char * specialPrompt(int menu)
             if (cmdInputs == 0) quit();
         }
         i++;
+		}
 		
 		 printf("The command is %s\n", cmdInputs);
 		 
@@ -310,6 +313,7 @@ doRPCCmd(Client *C, char c)
   // NULL MT OVERRIDE ;-)
   printf("%s: rc=0x%x\n", __func__, rc);
   if (rc == 0xdeadbeef) rc=1;
+  
   return rc;
 }  
 
@@ -330,9 +334,6 @@ doRPC(Client *C)
   return rc;
 }
 
-
-
-
 int 
 docmd(Client *C, char cmd)
 {
@@ -348,6 +349,33 @@ docmd(Client *C, char cmd)
   case 'r':
     rc = doRPC(C);
     break;
+  case '1':
+    rc=doRPCCmd(C,'1');
+    break;
+  case '2':
+    rc=doRPCCmd(C,'2');
+    break;
+  case '3':
+    rc=doRPCCmd(C,'3');
+    break;
+  case '4':
+    rc=doRPCCmd(C,'4');
+    break;
+  case '5':
+    rc=doRPCCmd(C,'5');
+    break;
+  case '6':
+    rc=doRPCCmd(C,'6');
+    break;
+  case '7':
+    rc=doRPCCmd(C,'7');
+    break;
+  case '8':
+    rc=doRPCCmd(C,'8');
+    break;
+  case '9':
+    rc=doRPCCmd(C,'9');
+    break;
   case 'q':
     rc=-1;
     break;
@@ -362,67 +390,86 @@ docmd(Client *C, char cmd)
 
 int doCMDS(Client *C, char * cmdInput)
 {
-int rc =-1;
+int rc =1;
 
 if ( strcmp(cmdInput, "connect") == 0 )
 {
- rc=doRPCCmd(C,'h');
+ rc = doRPCCmd(C,'h');
+ return rc;
 } 
 
 if ( strcmp(cmdInput, "disconnect") == 0 )
 {
  rc=doRPCCmd(C,'h');
+ whoami = '?';
+ return rc;
 }
 
 if ( strcmp(cmdInput, '\n') == 0 )
 {
  map(clientMap);
+ return rc;
 }
 
 if (strcmp(cmdInput, "1") == 0)
 {
+ printf("\n Function call\n");
+
    rc=doRPCCmd(C,'1');
+    printf("\nThe value of rc %d\n", rc);
+
+   return rc;
 }
 if (strcmp(cmdInput, "2") == 0)
 {
    rc=doRPCCmd(C,'2');
+   return rc;
 }
 if (strcmp(cmdInput, "3") == 0)
 {
    rc=doRPCCmd(C,'3');
+   return rc;
 }
 if (strcmp(cmdInput, "4") == 0)
 {
    rc=doRPCCmd(C,'4');
+   return rc;
 }
 if (strcmp(cmdInput, "5") == 0)
 {
    rc=doRPCCmd(C,'5');
+   return rc;
 }
 if (strcmp(cmdInput, "6") == 0)
 {
    rc=doRPCCmd(C,'6');
+   return rc;
 }
 if (strcmp(cmdInput, "7") == 0)
 {
    rc=doRPCCmd(C,'7');
+   return rc;
 }
 if (strcmp(cmdInput, "8") == 0)
 {
    rc=doRPCCmd(C,'8');
+   return rc;
 }
 if (strcmp(cmdInput, "9") == 0)
 {
    rc=doRPCCmd(C,'9');
+   return rc;
 }
 if (strcmp(cmdInput, "where") == 0)
 {
    //printf("Connected to <ip:port>: You are X’s\n");// get port from globals
    printf("Connected to <%s:%d>.\n", globals.host, globals.port);// get port from globals
+   return rc;
 }
 if (strcmp(cmdInput, "quit") == 0)
 {
-   docmd(C,'q');
+   rc = docmd(C,'q');
+   return rc;
 }
 
 //0-9
@@ -443,15 +490,19 @@ shell(void *arg)
   char * longcommand;
 
   while (1) {
-	(longcommand=specialPrompt(menu)) 
+	(longcommand=specialPrompt(menu)); 
 	if (size(longcommand) > 1)
+	{
 		rc=doCMDS(C, longcommand);
+	}
 	else 
 	{
 	 c = longcommand[0];
 	 if (c != 0)
 		rc=docmd(C, c);
 	}
+	  fprintf(stderr, "hi\n");
+
     //if ((longcommand=specialPrompt(menu)) ) rc=doCMDS(C, longcommand);
     //if ((c=prompt(menu))!=0) rc=docmd(C, c);
     if (rc<0) break;
